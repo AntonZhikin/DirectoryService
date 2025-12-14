@@ -13,7 +13,6 @@ public sealed class Department
     
     private readonly List<DepartmentLocation> _departmentLocations = [];
     public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
-
     public DepartmentId Id { get; private set; }
     public DepartmentId? ParentId { get; private set; }
     public Department? Parent { get; private set; }
