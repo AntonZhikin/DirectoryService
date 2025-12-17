@@ -1,7 +1,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.ErrorManagement;
 
-namespace DirectoryService.Domain.Location;
+namespace DirectoryService.Domain.Location.ValueObjects;
 
 public record LocationName
 {

@@ -2,7 +2,6 @@ using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Path = DirectoryService.Domain.Departments.ValueObjects.Path;
 
 namespace DirectoryService.Infrastructure.Configurations;
 
@@ -73,7 +72,11 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasForeignKey(x => x.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(x => x.DepartmentLocations)
+        builder.HasMany(x => x.Locations)
+            .WithOne()
+            .HasForeignKey(x => x.DepartmentId);
+        
+        builder.HasMany(x => x.Positions)
             .WithOne()
             .HasForeignKey(x => x.DepartmentId);
     }

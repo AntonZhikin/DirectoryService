@@ -11,4 +11,9 @@
       <ProjectReference Include="..\DirectoryService.Domain\DirectoryService.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="12.1.1" />
+      <PackageReference Include="Microsoft.OpenApi" Version="1.6.17" />
+    </ItemGroup>
+
 </Project>
