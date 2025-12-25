@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.DepartamentLocation;
+using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Shared.ErrorManagement;
 using Path = DirectoryService.Domain.Departments.ValueObjects.Path;
@@ -11,9 +12,8 @@ public sealed class Department
     // EfCore
     private Department() { }
     
-    private readonly List<DepartmentLocation> _departmentLocations = [];
-    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
-
+    private readonly List<DepartmentLocation> _locations = [];
+    private readonly List<DepartmentPosition> _positions = [];
     public DepartmentId Id { get; private set; }
     public DepartmentId? ParentId { get; private set; }
     public Department? Parent { get; private set; }
@@ -24,7 +24,10 @@ public sealed class Department
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
+    
     public List<Department> ChildrenDepartments = [];
+    public IReadOnlyList<DepartmentLocation> Locations => _locations;
+    public IReadOnlyList<DepartmentPosition> Positions => _positions;
     private Department(
         DepartmentId id,
         DepartmentId? parentId,
@@ -43,7 +46,7 @@ public sealed class Department
         UpdatedAt = DateTime.UtcNow;
         Path = path;
         Depth = depth;
-        _departmentLocations = departmentLocations.ToList();
+        _locations = departmentLocations.ToList();
     }
 
     public static Result<Department, AppError> CreateParent(

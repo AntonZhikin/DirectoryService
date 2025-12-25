@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices.JavaScript;
-using CSharpFunctionalExtensions;
 using DirectoryService.Domain.DepartamentLocation;
+using DirectoryService.Domain.Location.ValueObjects;
+using TimeZone = DirectoryService.Domain.Location.ValueObjects.TimeZone;
 
 namespace DirectoryService.Domain.Location;
 
@@ -10,17 +10,17 @@ public sealed class Location
     private Location()
     {
     }
-
-    private List<Address> _addresses = [];
+    
     private List<DepartmentLocation> _departmentLocations = [];
-    public IReadOnlyList<Address> Addresses => _addresses;
     public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
 
     public LocationId Id { get; private set; } = null!;
 
     public LocationName Name { get; private set; } = null!;
+    
+    public Address Address { get; private set; } = null!;
 
-    public Timezone Timezone { get; private set; } = null!;
+    public TimeZone TimeZone { get; private set; } = null!;
 
     public bool IsActive { get; private set; }
 
@@ -28,13 +28,13 @@ public sealed class Location
 
     public DateTime UpdatedAt { get; private set; }
 
-    public Location(LocationName name, Timezone timezone, Address address)
+    public Location(LocationName name, TimeZone timeZone, Address address)
     {
         Id = new LocationId(Guid.NewGuid());
         Name = name;
-        Timezone = timezone;
+        TimeZone = timeZone;
         IsActive = true;
-        _addresses.Add(address);
+        Address = address;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }

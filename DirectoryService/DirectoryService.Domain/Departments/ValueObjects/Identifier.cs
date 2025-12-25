@@ -1,7 +1,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.ErrorManagement;
 
-namespace DirectoryService.Domain.Departments;
+namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public record Identifier
 {

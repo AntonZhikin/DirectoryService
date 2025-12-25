@@ -1,4 +1,5 @@
 using DirectoryService.Domain.Location;
+using DirectoryService.Domain.Location.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +9,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
 {
     public void Configure(EntityTypeBuilder<Location> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable("locations");
 
         builder.Property(x => x.Id)
             .IsRequired()
@@ -25,9 +26,23 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 .IsRequired();
         });
 
-        builder.OwnsMany(x => x.Addresses, ab => { ab.ToJson("addresses"); });
+        builder.ComplexProperty(x => x.Address, nb =>
+        {
+            nb.Property(n => n.City)
+                .HasColumnName("city")
+                .IsRequired();
+            nb.Property(n => n.Street)
+                .HasColumnName("street")
+                .IsRequired();
+            nb.Property(n => n.HouseNumber)
+                .HasColumnName("house_number")
+                .IsRequired();
+            nb.Property(n => n.Number)
+                .HasColumnName("number")
+                .IsRequired();
+        });
 
-        builder.ComplexProperty(x => x.Timezone, nb =>
+        builder.ComplexProperty(x => x.TimeZone, nb =>
         {
             nb.Property(n => n.Value)
                 .HasColumnName("timezone")

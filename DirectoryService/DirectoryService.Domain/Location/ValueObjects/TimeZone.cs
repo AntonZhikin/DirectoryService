@@ -1,18 +1,18 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.ErrorManagement;
 
-namespace DirectoryService.Domain.Location;
+namespace DirectoryService.Domain.Location.ValueObjects;
 
-public record Timezone
+public record TimeZone
 {
     public string Value { get; }
 
-    private Timezone(string value)
+    private TimeZone(string value)
     {
         Value = value;
     }
 
-    public static Result<Timezone, AppError> Create(string value)
+    public static Result<TimeZone, AppError> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return AppErrors.ValueIsInvalid(value);
@@ -22,6 +22,6 @@ public record Timezone
         if (!isValid)
             return AppErrors.ValueIsInvalid(value);
 
-        return new Timezone(value);
+        return new TimeZone(value);
     }
 }

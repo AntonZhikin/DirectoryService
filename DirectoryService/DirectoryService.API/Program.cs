@@ -1,4 +1,8 @@
+using DirectoryService.Application;
+using DirectoryService.Application.Locations;
+using DirectoryService.Application.Validation;
 using DirectoryService.Infrastructure;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +12,11 @@ builder.Services.AddScoped<ApplicationDbContext>(_ =>
     new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<CreateLocationHandler>();
+
+builder.Services.AddValidatorsFromAssembly(typeof(CustomValidators).Assembly);
 
 var app = builder.Build();
 
