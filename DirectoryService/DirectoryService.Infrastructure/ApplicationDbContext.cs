@@ -1,4 +1,4 @@
-﻿using DirectoryService.Domain.DepartamentLocation;
+﻿using DirectoryService.Domain.DepartmentLocation;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Location;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +9,7 @@ namespace DirectoryService.Infrastructure;
 public class ApplicationDbContext(string connectionString) : DbContext
 {
     public DbSet<Department> Departments { get; set; }
-
     public DbSet<Location> Locations { get; set; }
-    
     public DbSet<DepartmentLocation> DepartmentLocations { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

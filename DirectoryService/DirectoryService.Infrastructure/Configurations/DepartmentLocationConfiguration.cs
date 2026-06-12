@@ -1,4 +1,4 @@
-using DirectoryService.Domain.DepartamentLocation;
+using DirectoryService.Domain.DepartmentLocation;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Location;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +14,10 @@ public class DepartmentLocationConfiguration : IEntityTypeConfiguration<Departme
         builder.ToTable("department_locations");
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.IsPrimary)
+            .IsRequired()
+            .HasColumnName("is_primary");
 
         builder.Property(x => x.Id)
             .IsRequired()

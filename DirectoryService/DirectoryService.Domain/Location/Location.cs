@@ -1,4 +1,3 @@
-using DirectoryService.Domain.DepartamentLocation;
 using DirectoryService.Domain.Location.ValueObjects;
 using TimeZone = DirectoryService.Domain.Location.ValueObjects.TimeZone;
 
@@ -11,8 +10,8 @@ public sealed class Location
     {
     }
     
-    private List<DepartmentLocation> _departmentLocations = [];
-    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
+    private List<DepartmentLocation.DepartmentLocation> _departmentLocations = [];
+    public IReadOnlyList<DepartmentLocation.DepartmentLocation> DepartmentLocations => _departmentLocations;
 
     public LocationId Id { get; private set; } = null!;
 

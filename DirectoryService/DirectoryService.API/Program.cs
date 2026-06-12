@@ -1,9 +1,14 @@
 using DirectoryService.API.Middlewares;
-using DirectoryService.Application;
+using DirectoryService.Application.Database;
+using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Infrastructure;
+using DirectoryService.Infrastructure.Database;
+using DirectoryService.Infrastructure.Repositories;
+using EfCoreDepartmentRepository = DirectoryService.Infrastructure.Repositories.EfCoreDepartmentRepository;
 using FluentValidation;
+using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,13 +21,24 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Services.AddControllers();
 
+builder.Services.AddOpenApi();
+
 builder.Services.AddScoped<ApplicationDbContext>(_ =>
     new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
 
-builder.Services.AddOpenApi();
+builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
 
-builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+var repositoryProvider = builder.Configuration["RepositoryProvider"];
+
+if (repositoryProvider == "Dapper")
+    builder.Services.AddScoped<ILocationRepository, DapperLocationRepository>();
+else
+    builder.Services.AddScoped<ILocationRepository, EfCoreLocationRepository>();
+
 builder.Services.AddScoped<CreateLocationHandler>();
+
+builder.Services.AddScoped<IDepartmentRepository, EfCoreDepartmentRepository>();
+builder.Services.AddScoped<CreateDepartmentHandler>();
 
 builder.Services.AddValidatorsFromAssembly(typeof(CustomValidators).Assembly);
 
@@ -35,7 +51,7 @@ app.UseExceptionMiddleware();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "v1"));
+    app.MapScalarApiReference();
 }
 
 app.UseSerilogRequestLogging();

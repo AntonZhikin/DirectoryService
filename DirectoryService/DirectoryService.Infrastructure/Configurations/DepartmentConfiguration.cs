@@ -50,6 +50,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 .IsRequired();
         });
 
+        builder.Property(x => x.Slug)
+            .IsRequired()
+            .HasColumnName("slug");
+
         builder.Property(x => x.Depth)
             .IsRequired()
             .HasColumnName("depth");

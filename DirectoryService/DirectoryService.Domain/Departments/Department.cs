@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Domain.DepartamentLocation;
 using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Shared.ErrorManagement;
@@ -12,7 +11,7 @@ public sealed class Department
     // EfCore
     private Department() { }
     
-    private readonly List<DepartmentLocation> _locations = [];
+    private readonly List<DepartmentLocation.DepartmentLocation> _locations = [];
     private readonly List<DepartmentPosition> _positions = [];
     public DepartmentId Id { get; private set; }
     public DepartmentId? ParentId { get; private set; }
@@ -20,13 +19,14 @@ public sealed class Department
     public DepartmentName Name { get; private set; }
     public Identifier Identifier { get; private set; }
     public Path Path { get; private set; }
+    public string Slug { get; private set; }
     public int Depth { get; private set; }
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     
     public List<Department> ChildrenDepartments = [];
-    public IReadOnlyList<DepartmentLocation> Locations => _locations;
+    public IReadOnlyList<DepartmentLocation.DepartmentLocation> Locations => _locations;
     public IReadOnlyList<DepartmentPosition> Positions => _positions;
     private Department(
         DepartmentId id,
@@ -35,12 +35,13 @@ public sealed class Department
         Identifier identifier,
         Path path,
         int depth,
-        IEnumerable<DepartmentLocation> departmentLocations)
+        IEnumerable<DepartmentLocation.DepartmentLocation> departmentLocations)
     {
         Id = id;
         ParentId = parentId;
         Name = name;
         Identifier = identifier;
+        Slug = identifier.Value;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
@@ -52,7 +53,7 @@ public sealed class Department
     public static Result<Department, AppError> CreateParent(
         DepartmentName name,
         Identifier identifier,
-        IEnumerable<DepartmentLocation> departmentLocations,
+        IEnumerable<DepartmentLocation.DepartmentLocation> departmentLocations,
         DepartmentId? departmentId = null)
     {
         var departmentLocationsList = departmentLocations.ToList();
@@ -78,7 +79,7 @@ public sealed class Department
         DepartmentName name,
         Identifier identifier,
         Department parent,
-        IEnumerable<DepartmentLocation> departmentLocations,
+        IEnumerable<DepartmentLocation.DepartmentLocation> departmentLocations,
         DepartmentId? departmentId = null)
     {
         var departmentLocationsList = departmentLocations.ToList();
@@ -100,3 +101,4 @@ public sealed class Department
             departmentLocationsList);
     }
 }
+
