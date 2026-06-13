@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Location;
 using DirectoryService.Domain.Location.ValueObjects;
@@ -19,8 +20,16 @@ public class CreateLocationHandler(
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
         if (validationResult.IsValid == false)
             return validationResult.ToList();
-        
-        var addressResult = Address.Create(command.Request.City, command.Request.Street, command.Request.HouseNumber, command.Request.Number).Value;
+
+        bool isNameTaken = await locationRepository.IsNameTakenAsync(command.Request.Name, cancellationToken);
+        if (isNameTaken)
+            return AppErrors.AlreadyExists("location name").ToErrorList();
+
+        var addressResult = Address.Create(
+            command.Request.Address.City, 
+            command.Request.Address.Street,
+            command.Request.Address.HouseNumber,
+            command.Request.Address.Number).Value;
         var nameResult = LocationName.Create(command.Request.Name).Value;
         var timeResult = TimeZone.Create(command.Request.TimeZone).Value;
         
