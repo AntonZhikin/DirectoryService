@@ -1,11 +1,11 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Database;
-using DirectoryService.Domain.Location;
+using DirectoryService.Domain.Locations;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Shared.ErrorManagement;
 
-namespace DirectoryService.Infrastructure.Repositories;
+namespace DirectoryService.Infrastructure.Repositories.Locations;
 
 public class DapperLocationRepository(IDbConnectionFactory connectionFactory) : ILocationRepository
 {
@@ -43,4 +43,7 @@ public class DapperLocationRepository(IDbConnectionFactory connectionFactory) : 
         int count = await connection.ExecuteScalarAsync<int>(sql, new { Name = name });
         return count > 0;
     }
+
+    public Task<Location?> FindByIdAsync(LocationId requestLocationId, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public Task<Result<LocationId, AppErrorList>> SaveChangesAsync(Location location, CancellationToken cancellationToken) => throw new NotImplementedException();
 }

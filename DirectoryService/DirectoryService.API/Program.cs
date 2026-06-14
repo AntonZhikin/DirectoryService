@@ -1,12 +1,19 @@
 using DirectoryService.API.Middlewares;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
+using DirectoryService.Application.Departments.Create;
+using DirectoryService.Application.Departments.Linking;
+using DirectoryService.Application.Departments.Unlinking;
+using DirectoryService.Application.Departments.Update;
 using DirectoryService.Application.Locations;
+using DirectoryService.Application.Locations.Create;
+using DirectoryService.Application.Locations.Update;
 using DirectoryService.Application.Validation;
 using DirectoryService.Infrastructure;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Repositories;
-using EfCoreDepartmentRepository = DirectoryService.Infrastructure.Repositories.EfCoreDepartmentRepository;
+using DirectoryService.Infrastructure.Repositories.Locations;
+using DirectoryService.Infrastructure.Repositories.Departments;
 using FluentValidation;
 using Scalar.AspNetCore;
 using Serilog;
@@ -35,10 +42,14 @@ if (repositoryProvider == "Dapper")
 else
     builder.Services.AddScoped<ILocationRepository, EfCoreLocationRepository>();
 
-builder.Services.AddScoped<CreateLocationHandler>();
-
 builder.Services.AddScoped<IDepartmentRepository, EfCoreDepartmentRepository>();
+
 builder.Services.AddScoped<CreateDepartmentHandler>();
+builder.Services.AddScoped<CreateLocationHandler>();
+builder.Services.AddScoped<UpdateDepartmentHandler>();
+builder.Services.AddScoped<UpdateLocationHandler>();
+builder.Services.AddScoped<LinkingLocationHandler>();
+builder.Services.AddScoped<UnlinkingLocationHandler>();
 
 builder.Services.AddValidatorsFromAssembly(typeof(CustomValidators).Assembly);
 

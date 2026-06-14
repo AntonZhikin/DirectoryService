@@ -1,7 +1,7 @@
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Location;
+using DirectoryService.Domain.Locations;
 
-namespace DirectoryService.Domain.DepartmentLocation;
+namespace DirectoryService.Domain.DepartmentLocations;
 
 public sealed class DepartmentLocation
 {
