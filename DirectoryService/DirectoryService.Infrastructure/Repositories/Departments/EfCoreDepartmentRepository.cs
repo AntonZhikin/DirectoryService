@@ -9,7 +9,7 @@ namespace DirectoryService.Infrastructure.Repositories.Departments;
 
 public class EfCoreDepartmentRepository(ApplicationDbContext dbContext) : IDepartmentRepository
 {
-    public async Task<Result<DepartmentId, AppErrorList>> AddAsync(
+    public async Task<Result<DepartmentId, AppError>> AddAsync(
         Department department,
         CancellationToken cancellationToken)
     {
@@ -37,7 +37,7 @@ public class EfCoreDepartmentRepository(ApplicationDbContext dbContext) : IDepar
         return foundCount == locationIdObjects.Count;
     }
 
-    public async Task<Result<DepartmentId, AppErrorList>> SaveChangesAsync(Department department, CancellationToken cancellationToken)
+    public async Task<Result<DepartmentId, AppError>> SaveChangesAsync(Department department, CancellationToken cancellationToken)
     {
         await dbContext.SaveChangesAsync(cancellationToken);
 

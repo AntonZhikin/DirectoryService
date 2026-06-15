@@ -30,7 +30,7 @@ public class DepartmentPositionConfiguration : IEntityTypeConfiguration<Departme
 
         builder.Property(x => x.PositionId)
             .IsRequired()
-            .HasColumnName("location_id")
+            .HasColumnName("position_id")
             .HasConversion(
                 value => value.Value,
                 value => new PositionId(value));

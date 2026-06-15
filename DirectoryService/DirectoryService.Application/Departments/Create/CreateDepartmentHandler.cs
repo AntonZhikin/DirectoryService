@@ -16,13 +16,13 @@ public class CreateDepartmentHandler(
     IDepartmentRepository departmentRepository,
     ILogger<CreateDepartmentHandler> logger)
 {
-    public async Task<Result<DepartmentId, AppErrorList>> Handle(
+    public async Task<Result<DepartmentId, AppError>> Handle(
         CreateDepartmentCommand command,
         CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
-            return validationResult.ToList();
+            return validationResult.ToAppError();
 
         var request = command.Request;
 
@@ -30,11 +30,16 @@ public class CreateDepartmentHandler(
         {
             bool locationsExist = await departmentRepository.AreLocationsExistAsync(request.LocationIds, cancellationToken);
             if (!locationsExist)
-                return AppErrors.NotFound("one or more locationIds").ToErrorList();
+                return AppErrors.NotFound(name: "one or more locationIds");
         }
 
-        var name = DepartmentName.Create(request.Name).Value;
-        var identifier = Identifier.Create(request.Slug).Value;
+        var nameResult = DepartmentName.Create(request.Name);
+        if (nameResult.IsFailure)
+            return nameResult.Error;
+
+        var identifierResult = Identifier.Create(request.Slug);
+        if (identifierResult.IsFailure)
+            return identifierResult.Error;
 
         var newDepartmentId = new DepartmentId(Guid.NewGuid());
 
@@ -56,17 +61,17 @@ public class CreateDepartmentHandler(
                 new DepartmentId(request.ParentId.Value), cancellationToken);
 
             if (parent is null)
-                return AppErrors.NotFound(request.ParentId.Value).ToErrorList();
+                return AppErrors.NotFound(request.ParentId.Value);
 
-            departmentResult = Department.CreateChild(name, identifier, parent, departmentLocations, newDepartmentId);
+            departmentResult = Department.CreateChild(nameResult.Value, identifierResult.Value, parent, departmentLocations, newDepartmentId);
         }
         else
         {
-            departmentResult = Department.CreateParent(name, identifier, departmentLocations, newDepartmentId);
+            departmentResult = Department.CreateParent(nameResult.Value, identifierResult.Value, departmentLocations, newDepartmentId);
         }
 
         if (departmentResult.IsFailure)
-            return AppErrors.Failure("create_department", "Failed to create department").ToErrorList();
+            return AppErrors.Failure("Failed to create department");
 
         var result = await departmentRepository.AddAsync(departmentResult.Value, cancellationToken);
         if (result.IsFailure)

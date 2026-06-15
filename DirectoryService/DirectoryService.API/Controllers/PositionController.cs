@@ -8,32 +8,32 @@ namespace DirectoryService.API.Controllers;
 public class PositionController : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] CreatePositionRequest request, CancellationToken cancellationToken)
+    public Task<ActionResult> Create([FromBody] CreatePositionRequest request, CancellationToken cancellationToken)
     {
-        return Ok("Position created");
+        return Task.FromResult<ActionResult>(Ok("Position created"));
     }
 
     [HttpGet]
-    public async Task<ActionResult> Get(CancellationToken cancellationToken)
+    public Task<ActionResult> Get(CancellationToken cancellationToken)
     {
-        return Ok("Positions list");
+        return Task.FromResult<ActionResult>(Ok("Positions list"));
     }
 
     [HttpGet("{positionId:guid}")]
-    public async Task<ActionResult> GetById([FromRoute] Guid positionId, CancellationToken cancellationToken)
+    public Task<ActionResult> GetById([FromRoute] Guid positionId, CancellationToken cancellationToken)
     {
-        return Ok($"Position {positionId}");
+        return Task.FromResult<ActionResult>(Ok($"Position {positionId}"));
     }
 
     [HttpPut("{positionId:guid}")]
-    public async Task<ActionResult> Update([FromRoute] Guid positionId, [FromBody] UpdatePositionRequest request, CancellationToken cancellationToken)
+    public Task<ActionResult> Update([FromRoute] Guid positionId, [FromBody] UpdatePositionRequest request, CancellationToken cancellationToken)
     {
-        return Ok($"Position {positionId} updated");
+        return Task.FromResult<ActionResult>(Ok($"Position {positionId} updated"));
     }
 
     [HttpDelete("{positionId:guid}")]
-    public async Task<ActionResult> Delete([FromRoute] Guid positionId, CancellationToken cancellationToken)
+    public Task<ActionResult> Delete([FromRoute] Guid positionId, CancellationToken cancellationToken)
     {
-        return Ok($"Position {positionId} deleted");
+        return Task.FromResult<ActionResult>(Ok($"Position {positionId} deleted"));
     }
 }

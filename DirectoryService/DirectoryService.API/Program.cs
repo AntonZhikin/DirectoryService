@@ -1,17 +1,14 @@
 using DirectoryService.API.Middlewares;
 using DirectoryService.Application.Database;
-using DirectoryService.Application.Departments;
 using DirectoryService.Application.Departments.Create;
 using DirectoryService.Application.Departments.Linking;
 using DirectoryService.Application.Departments.Unlinking;
 using DirectoryService.Application.Departments.Update;
-using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.Create;
 using DirectoryService.Application.Locations.Update;
 using DirectoryService.Application.Validation;
 using DirectoryService.Infrastructure;
 using DirectoryService.Infrastructure.Database;
-using DirectoryService.Infrastructure.Repositories;
 using DirectoryService.Infrastructure.Repositories.Locations;
 using DirectoryService.Infrastructure.Repositories.Departments;
 using FluentValidation;
@@ -35,7 +32,7 @@ builder.Services.AddScoped<ApplicationDbContext>(_ =>
 
 builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
 
-var repositoryProvider = builder.Configuration["RepositoryProvider"];
+string? repositoryProvider = builder.Configuration["RepositoryProvider"];
 
 if (repositoryProvider == "Dapper")
     builder.Services.AddScoped<ILocationRepository, DapperLocationRepository>();

@@ -13,25 +13,25 @@ public class UpdateDepartmentHandler(
     IDepartmentRepository departmentRepository,
     ILogger<UpdateDepartmentHandler> logger)
 {
-    public async Task<Result<DepartmentId, AppErrorList>> Handle(
+    public async Task<Result<DepartmentId, AppError>> Handle(
         UpdateDepartmentCommand command,
         CancellationToken cancellationToken)
     {
         var validateResult = await validator.ValidateAsync(command, cancellationToken);
         if (!validateResult.IsValid)
-            return validateResult.ToList();
+            return validateResult.ToAppError();
 
         var departmentResult = await departmentRepository
             .FindByIdAsync(new DepartmentId(command.DepartmentId), cancellationToken);
         if (departmentResult == null)
         {
             logger.LogDebug("Department not found");
-            return AppErrors.NotFound("department").ToErrorList();
+            return AppErrors.NotFound(name: "department");
         }
-        
+
         var updateResult = departmentResult.UpdateName(command.Request.Name);
         if (updateResult.IsFailure)
-            return updateResult.Error.ToErrorList();
+            return updateResult.Error;
         
         var result = await departmentRepository.SaveChangesAsync(departmentResult, cancellationToken);
         if (result.IsFailure)

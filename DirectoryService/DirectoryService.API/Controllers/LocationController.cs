@@ -1,4 +1,4 @@
-using DirectoryService.Application.Locations;
+using DirectoryService.API.Extensions;
 using DirectoryService.Application.Locations.Create;
 using DirectoryService.Application.Locations.Update;
 using DirectoryService.Contracts.Request.Location;
@@ -20,12 +20,23 @@ public class LocationController : ControllerBase
         var command = new CreateLocationCommand(request);
 
         var result = await handler.Handle(command, cancellationToken);
-        if (result.IsFailure)
-            return BadRequest(result.Error);
-
-        return Ok(Envelope.Ok(result.Value));
+        return result.IsFailure 
+            ? result.Error.ToActionResult() 
+            : Ok(Envelope.Ok(result.Value));
     }
-    
+
+    [HttpGet]
+    public Task<ActionResult> Get(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<ActionResult>(Ok("Locations list"));
+    }
+
+    [HttpGet("{locationId:guid}")]
+    public Task<ActionResult> GetById([FromRoute] Guid locationId, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<ActionResult>(Ok($"Location {locationId}"));
+    }
+
     [HttpPatch("{locationId:guid}")]
     public async Task<ActionResult> Update(
         [FromRoute] Guid locationId,
@@ -33,30 +44,17 @@ public class LocationController : ControllerBase
         [FromServices] UpdateLocationHandler handler,
         CancellationToken cancellationToken)
     {
-        var command =  new UpdateLocationCommand(locationId, request);
-        
+        var command = new UpdateLocationCommand(locationId, request);
+
         var result = await handler.Handle(command, cancellationToken);
-        if (result.IsFailure)
-            return BadRequest(result.Error);
-        
-        return Ok(Envelope.Ok(result.Value));
-    }
-
-    [HttpGet]
-    public async Task<ActionResult> Get(CancellationToken cancellationToken)
-    {
-        return Ok("Locations list");
-    }
-
-    [HttpGet("{locationId:guid}")]
-    public async Task<ActionResult> GetById([FromRoute] Guid locationId, CancellationToken cancellationToken)
-    {
-        return Ok($"Location {locationId}");
+        return result.IsFailure
+            ? result.Error.ToActionResult()
+            : Ok(Envelope.Ok(result.Value));
     }
 
     [HttpDelete("{locationId:guid}")]
-    public async Task<ActionResult> Delete([FromRoute] Guid locationId, CancellationToken cancellationToken)
+    public Task<ActionResult> Delete([FromRoute] Guid locationId, CancellationToken cancellationToken)
     {
-        return Ok($"Location {locationId} deleted");
+        return Task.FromResult<ActionResult>(Ok($"Location {locationId} deleted"));
     }
 }
