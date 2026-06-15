@@ -21,7 +21,8 @@ public class DepartmentController : ControllerBase
         [FromServices] CreateDepartmentHandler handler,
         CancellationToken cancellationToken)
     {
-        return await handler.Handle(new CreateDepartmentCommand(request), cancellationToken);
+        var result = await handler.Handle(new CreateDepartmentCommand(request), cancellationToken);
+        return EndpointResult<DepartmentId>.Created(result);
     }
 
     [HttpPatch("{departmentId:guid}")]
@@ -41,7 +42,8 @@ public class DepartmentController : ControllerBase
         [FromServices] LinkingLocationHandler handler,
         CancellationToken cancellationToken)
     {
-        return await handler.Handle(new LinkingLocationCommand(departmentId, locationId), cancellationToken);
+        var result = await handler.Handle(new LinkingLocationCommand(departmentId, locationId), cancellationToken);
+        return EndpointResult<DepartmentLocationId>.Created(result);
     }
 
     [HttpDelete("{departmentId:guid}/locations/{locationId:guid}")]

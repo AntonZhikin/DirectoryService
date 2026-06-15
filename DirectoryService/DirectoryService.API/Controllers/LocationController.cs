@@ -17,7 +17,8 @@ public class LocationController : ControllerBase
         [FromServices] CreateLocationHandler handler,
         CancellationToken cancellationToken)
     {
-        return await handler.Handle(new CreateLocationCommand(request), cancellationToken);
+        var result = await handler.Handle(new CreateLocationCommand(request), cancellationToken);
+        return EndpointResult<LocationId>.Created(result);
     }
     
     [HttpPatch("{locationId:guid}")]

@@ -23,6 +23,9 @@ public sealed class EndpointResult<TValue> : IResult, IEndpointMetadataProvider
 
     public static implicit operator EndpointResult<TValue>(Result<TValue, AppError> result) => new(result);
 
+    public static EndpointResult<TValue> Created(Result<TValue, AppError> result)
+        => new(result, StatusCodes.Status201Created);
+
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(method);
@@ -30,9 +33,9 @@ public sealed class EndpointResult<TValue> : IResult, IEndpointMetadataProvider
 
         builder.Metadata.Add(new ProducesResponseTypeMetadata(200, typeof(Envelope<TValue>), ["application/json"]));
         builder.Metadata.Add(new ProducesResponseTypeMetadata(201, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(400, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(404, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(409, typeof(Envelope<TValue>), ["application/json"]));
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(500, typeof(Envelope<TValue>), ["application/json"]));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(400, typeof(Envelope), ["application/json"]));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(404, typeof(Envelope), ["application/json"]));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(409, typeof(Envelope), ["application/json"]));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(500, typeof(Envelope), ["application/json"]));
     }
 }
