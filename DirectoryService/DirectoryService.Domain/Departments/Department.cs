@@ -138,7 +138,7 @@ public sealed class Department
     {
         var departmentLocation = _locations.FirstOrDefault(l => l.LocationId == locationId);
         if (departmentLocation is null)
-            return AppErrors.NotFound("department location");
+            return AppErrors.NotFound(name: "department location");
         
         _locations.Remove(departmentLocation);
         UpdatedAt = DateTime.UtcNow;

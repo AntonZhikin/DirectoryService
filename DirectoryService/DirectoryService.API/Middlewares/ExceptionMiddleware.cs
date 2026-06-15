@@ -19,9 +19,10 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        logger.LogError(exception, exception.Message);
+        // Полные детали — только в лог. Наружу — дженерик, чтобы не утекали внутренности.
+        logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
 
-        var envelope = Envelope.Error(AppError.Failure("server.internal", exception.Message));
+        var envelope = Envelope.Error(AppError.Failure("server.internal", "Произошла внутренняя ошибка сервера"));
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 

@@ -8,7 +8,7 @@ namespace DirectoryService.Infrastructure.Repositories.Locations;
 
 public class EfCoreLocationRepository(ApplicationDbContext dbContext) : ILocationRepository
 {
-    public async Task<Result<LocationId, AppErrorList>> AddAsync(Location location, CancellationToken cancellationToken = default)
+    public async Task<Result<LocationId, AppError>> AddAsync(Location location, CancellationToken cancellationToken = default)
     {
         dbContext.Locations.Add(location);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -26,7 +26,7 @@ public class EfCoreLocationRepository(ApplicationDbContext dbContext) : ILocatio
         return await dbContext.Locations.FirstOrDefaultAsync(l => l.Id == requestLocationId, cancellationToken);
     }
 
-    public async Task<Result<LocationId, AppErrorList>> SaveChangesAsync(Location location, CancellationToken cancellationToken)
+    public async Task<Result<LocationId, AppError>> SaveChangesAsync(Location location, CancellationToken cancellationToken)
     {
         // location загружена трекингом в FindByIdAsync, изменения попадут в SaveChanges сами.
         await dbContext.SaveChangesAsync(cancellationToken);

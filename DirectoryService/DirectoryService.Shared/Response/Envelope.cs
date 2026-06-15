@@ -8,16 +8,16 @@ public record Envelope
     public object? Result { get; }
 
     [JsonPropertyName("errors")]
-    public AppErrorList? Errors { get; }
+    public AppError? Errors { get; }
 
     [JsonPropertyName("isError")]
-    public bool IsError => Errors != null || Errors != null && Errors.Any();
+    public bool IsError => Errors != null;
 
     [JsonPropertyName("timeGenerated")]
     public DateTime TimeGenerated { get; }
 
     [JsonConstructor]
-    private Envelope(object? result, AppErrorList? errors)
+    private Envelope(object? result, AppError? errors)
     {
         Result = result;
         Errors = errors;
@@ -27,7 +27,7 @@ public record Envelope
     public static Envelope Ok(object? result = null) =>
         new(result, null);
 
-    public static Envelope Error(AppErrorList appErrors) =>
+    public static Envelope Error(AppError appErrors) =>
         new(null, appErrors);
 }
 
@@ -37,16 +37,16 @@ public record Envelope<T>
     public T? Result { get; }
 
     [JsonPropertyName("errors")]
-    public AppErrorList? Errors { get; }
+    public AppError? Errors { get; }
 
     [JsonPropertyName("isError")]
-    public bool IsError => Errors != null || Errors != null && Errors.Any();
+    public bool IsError => Errors != null;
 
     [JsonPropertyName("timeGenerated")]
     public DateTime TimeGenerated { get; }
 
     [JsonConstructor]
-    private Envelope(T? result, AppErrorList? errors)
+    private Envelope(T? result, AppError? errors)
     {
         Result = result;
         Errors = errors;
@@ -56,6 +56,6 @@ public record Envelope<T>
     public static Envelope<T> Ok(T? result = default) =>
         new(result, null);
 
-    public static Envelope<T> Error(AppErrorList appErrors) =>
+    public static Envelope<T> Error(AppError appErrors) =>
         new(default, appErrors);
 }

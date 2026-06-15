@@ -6,8 +6,8 @@ namespace DirectoryService.Application.Database;
 
 public interface IDepartmentRepository
 {
-    Task<Result<DepartmentId, AppErrorList>> AddAsync(Department department, CancellationToken cancellationToken);
+    Task<Result<DepartmentId, AppError>> AddAsync(Department department, CancellationToken cancellationToken);
     Task<Department?> FindByIdAsync(DepartmentId id, CancellationToken cancellationToken);
     Task<bool> AreLocationsExistAsync(IEnumerable<Guid> locationIds, CancellationToken cancellationToken);
-    Task<Result<DepartmentId, AppErrorList>> SaveChangesAsync(Department department, CancellationToken cancellationToken);
+    Task<Result<DepartmentId, AppError>> SaveChangesAsync(Department department, CancellationToken cancellationToken);
 }

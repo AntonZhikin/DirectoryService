@@ -14,23 +14,23 @@ public class UnlinkingLocationHandler(
     IDepartmentRepository departmentRepository,
     ILogger<UnlinkingLocationHandler> logger)
 {
-    public async Task<Result<DepartmentId, AppErrorList>> Handle(
+    public async Task<Result<DepartmentId, AppError>> Handle(
         UnlinkingLocationCommand command, CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
-            return validationResult.ToList();
-        
+            return validationResult.ToAppError();
+
         var department = await departmentRepository.FindByIdAsync(new DepartmentId(command.DepartmentId), cancellationToken);
         if (department == null)
         {
             logger.LogDebug("Department with id {CommandDepartmentId} not found", command.DepartmentId);
-            return AppErrors.NotFound("Department").ToErrorList();
+            return AppErrors.NotFound(name: "department");
         }
 
         var unlinkedDepartment = department.DeleteLocation(new LocationId(command.LocationId));
         if (unlinkedDepartment.IsFailure)
-            return unlinkedDepartment.Error.ToErrorList();
+            return unlinkedDepartment.Error;
         
         var result = await departmentRepository.SaveChangesAsync(department, cancellationToken);
         if (result.IsFailure)

@@ -15,15 +15,15 @@ public class CreateLocationHandler(
     ILocationRepository locationRepository,
     ILogger<CreateLocationHandler> logger)
 {
-    public async Task<Result<LocationId, AppErrorList>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<LocationId, AppError>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
         if (validationResult.IsValid == false)
-            return validationResult.ToList();
+            return validationResult.ToAppError();
 
         bool isNameTaken = await locationRepository.IsNameTakenAsync(command.Request.Name, cancellationToken);
         if (isNameTaken)
-            return AppErrors.AlreadyExists("location name").ToErrorList();
+            return AppErrors.AlreadyExists("location name");
 
         var addressResult = Address.Create(
             command.Request.Address.City, 

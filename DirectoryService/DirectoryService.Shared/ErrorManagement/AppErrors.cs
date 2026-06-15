@@ -2,26 +2,27 @@
 
 public static class AppErrors
 {
-    public static AppError ValueIsInvalid(string name) =>
-        AppError.Validation("value.is.invalid", $"'{name}' is invalid");
-
-    public static AppError NotFound(Guid id) =>
-        AppError.NotFound("record.not.found", $"Record not found for id '{id}'");
-
-    public static AppError NotFound(string name) =>
-        AppError.NotFound("record.not.found", $"Record not found with '{name}'");
-
-    public static AppError AlreadyExists(string name) =>
-        AppError.Conflict("record.already.exists", $"Record already exists with '{name}'");
-
-    public static AppError Failure(string message) =>
-        AppError.Failure("record.failure", message);
+    public static AppError ValueIsInvalid(string? name = null)
+    {
+        string label = name ?? "значение";
+        return AppError.Validation("value.is.invalid", $"'{label}' недействительно", name);
+    }
     
-    public static AppError Failure(string code, string message) => AppError.Failure(code, message);
-    
-    public static AppError UnExpected(string message) =>
-        AppError.UnExpected("unexpected.error", message);
+    public static AppError NotFound(Guid? id = null, string? name = null)
+    {
+        string subject = name ?? "запись";
+        string forId = id is null ? string.Empty : $" по Id '{id}'";
+        return AppError.NotFound("record.not.found", $"{subject} не найдена{forId}");
+    }
 
-    public static AppError External(string message) =>
-        AppError.External("external.error", message);
+    public static AppError AlreadyExists(string? name = null)
+    {
+        string subject = name ?? "запись";
+        return AppError.Conflict("record.already.exists", $"{subject} уже существует");
+    }
+
+    public static AppError Failure(string? message = null)
+    { 
+        return AppError.Failure("server.failure", message ?? "Серверная ошибка");
+    }
 }

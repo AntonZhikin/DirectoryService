@@ -9,7 +9,7 @@ namespace DirectoryService.Infrastructure.Repositories.Locations;
 
 public class DapperLocationRepository(IDbConnectionFactory connectionFactory) : ILocationRepository
 {
-    public async Task<Result<LocationId, AppErrorList>> AddAsync(Location location, CancellationToken cancellationToken = default)
+    public async Task<Result<LocationId, AppError>> AddAsync(Location location, CancellationToken cancellationToken = default)
     {
         const string sql = """
             INSERT INTO locations (id, name, timezone, city, street, house_number, number, is_active, created_at, updated_at)
@@ -45,5 +45,5 @@ public class DapperLocationRepository(IDbConnectionFactory connectionFactory) : 
     }
 
     public Task<Location?> FindByIdAsync(LocationId requestLocationId, CancellationToken cancellationToken) => throw new NotImplementedException();
-    public Task<Result<LocationId, AppErrorList>> SaveChangesAsync(Location location, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public Task<Result<LocationId, AppError>> SaveChangesAsync(Location location, CancellationToken cancellationToken) => throw new NotImplementedException();
 }

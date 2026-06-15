@@ -14,27 +14,27 @@ public class UpdateLocationHandler(
     ILogger<UpdateLocationHandler> logger
     )
 {
-    public async Task<Result<LocationId, AppErrorList>> Handle(
+    public async Task<Result<LocationId, AppError>> Handle(
         UpdateLocationCommand command,
         CancellationToken cancellationToken)
     {
         var validateResult = await validator.ValidateAsync(command, cancellationToken);
         if (!validateResult.IsValid)
-            return validateResult.ToList();
+            return validateResult.ToAppError();
 
         var location = await locationRepository.FindByIdAsync(new LocationId(command.LocationId), cancellationToken);
         if (location == null)
         {
             logger.LogDebug("Location not found");
-            return AppErrors.NotFound("location").ToErrorList();
+            return AppErrors.NotFound(name: "location");
         }
-        
+
         var request = command.Request;
-        
+
         var updateResult = location.Update(request.Name, request.Address.City, request.Address.Street,
             request.Address.HouseNumber, request.Address.Number, request.IsActive, request.TimeZone);
         if (updateResult.IsFailure)
-            return updateResult.Error.ToErrorList();
+            return updateResult.Error;
         
         await locationRepository.SaveChangesAsync(location, cancellationToken);
         

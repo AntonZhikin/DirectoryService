@@ -16,12 +16,12 @@ public class LinkingLocationHandler(
     ILocationRepository locationRepository,
     ILogger<LinkingLocationHandler> logger)
 {
-    public async Task<Result<DepartmentLocationId, AppErrorList>> Handle(
+    public async Task<Result<DepartmentLocationId, AppError>> Handle(
         LinkingLocationCommand command, CancellationToken cancellationToken)
     {
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
-            return validationResult.ToList();
+            return validationResult.ToAppError();
 
         var departmentId = new DepartmentId(command.DepartmentId);
         var locationId = new LocationId(command.LocationId);
@@ -30,21 +30,21 @@ public class LinkingLocationHandler(
         if (department == null)
         {
             logger.LogDebug("Department not found");
-            return AppErrors.NotFound("Department not found").ToErrorList();
+            return AppErrors.NotFound(name: "department");
         }
 
         var location = await locationRepository.FindByIdAsync(locationId, cancellationToken);
         if (location == null)
         {
             logger.LogDebug("Location not found");
-            return AppErrors.NotFound("Location not found").ToErrorList();
+            return AppErrors.NotFound(name: "location");
         }
 
         var addResult = department.AddLocation(locationId);
         if (addResult.IsFailure)
         {
             logger.LogDebug("Relationship already exists");
-            return addResult.Error.ToErrorList();
+            return addResult.Error;
         }
 
         var updateResult = await departmentRepository.SaveChangesAsync(department, cancellationToken);

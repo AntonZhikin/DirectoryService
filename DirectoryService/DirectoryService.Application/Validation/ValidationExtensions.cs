@@ -5,15 +5,12 @@ namespace DirectoryService.Application.Validation;
 
 public static class ValidationExtensions
 {
-    public static AppErrorList ToList(this ValidationResult validationResult)
+    public static AppError ToAppError(this ValidationResult validationResult)
     {
-        var validationErrors = validationResult.Errors;
+        var messages = validationResult.Errors
+            .Select(e => AppError.DeserializeToMessage(e.ErrorMessage, e.PropertyName))
+            .ToArray();
 
-        var errors = from validationError in validationErrors
-            let errorMessage = validationError.ErrorMessage
-            let error = AppError.Deserialize(errorMessage)
-            select AppError.Validation(error.Code, error.Message, validationError.PropertyName);
-
-        return errors.ToList();
+        return AppError.Validation(messages);
     }
 }
