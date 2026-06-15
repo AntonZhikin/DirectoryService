@@ -11,7 +11,10 @@ using DirectoryService.Infrastructure;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Repositories.Locations;
 using DirectoryService.Infrastructure.Repositories.Departments;
+using DirectoryService.Shared.ErrorManagement;
+using DirectoryService.Shared.Response;
 using FluentValidation;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -25,7 +28,24 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Services.AddControllers();
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddSchemaTransformer((schema, context, _) =>
+    {
+        if (context.JsonTypeInfo.Type == typeof(Envelope<AppError>))
+        {
+            if (schema.Properties.TryGetValue("Error", out var error))
+            {
+                error.Items.Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.Schema,
+                    Id = "Error"
+                };
+            }
+        }
+        return Task.CompletedTask;
+    });
+});
 
 builder.Services.AddScoped<ApplicationDbContext>(_ =>
     new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));

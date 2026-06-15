@@ -1,10 +1,12 @@
+using DirectoryService.API.EndpointsResults;
 using DirectoryService.API.Extensions;
 using DirectoryService.Application.Departments.Create;
 using DirectoryService.Application.Departments.Linking;
 using DirectoryService.Application.Departments.Unlinking;
 using DirectoryService.Application.Departments.Update;
 using DirectoryService.Contracts.Request.Department;
-using DirectoryService.Shared.Response;
+using DirectoryService.Domain.DepartmentLocations;
+using DirectoryService.Domain.Departments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.API.Controllers;
@@ -14,62 +16,42 @@ namespace DirectoryService.API.Controllers;
 public class DepartmentController : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Create(
+    public async Task<EndpointResult<DepartmentId>> Create(
         [FromBody] CreateDepartmentRequest request,
         [FromServices] CreateDepartmentHandler handler,
         CancellationToken cancellationToken)
     {
-        var command = new CreateDepartmentCommand(request);
-
-        var result = await handler.Handle(command, cancellationToken);
-        return result.IsFailure
-            ? result.Error.ToActionResult()
-            : Ok(Envelope.Ok(result.Value));
+        return await handler.Handle(new CreateDepartmentCommand(request), cancellationToken);
     }
 
     [HttpPatch("{departmentId:guid}")]
-    public async Task<ActionResult> Update(
+    public async Task<EndpointResult<DepartmentId>> Update(
         [FromRoute] Guid departmentId,
         [FromBody] UpdateDepartmentRequest request,
         [FromServices] UpdateDepartmentHandler handler,
         CancellationToken cancellationToken)
     {
-        var command = new UpdateDepartmentCommand(departmentId, request);
-
-        var result = await handler.Handle(command, cancellationToken);
-        return result.IsFailure
-            ? result.Error.ToActionResult()
-            : Ok(Envelope.Ok(result.Value));
+        return await handler.Handle(new UpdateDepartmentCommand(departmentId, request), cancellationToken);
     }
 
     [HttpPost("{departmentId:guid}/locations/{locationId:guid}")]
-    public async Task<ActionResult> LinkingLocation(
+    public async Task<EndpointResult<DepartmentLocationId>> LinkingLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
         [FromServices] LinkingLocationHandler handler,
         CancellationToken cancellationToken)
     {
-        var command = new LinkingLocationCommand(departmentId, locationId);
-
-        var result = await handler.Handle(command, cancellationToken);
-        return result.IsFailure
-            ? result.Error.ToActionResult()
-            : Ok(Envelope.Ok(result.Value));
+        return await handler.Handle(new LinkingLocationCommand(departmentId, locationId), cancellationToken);
     }
 
     [HttpDelete("{departmentId:guid}/locations/{locationId:guid}")]
-    public async Task<ActionResult> UnlinkingLocation(
+    public async Task<EndpointResult<DepartmentId>> UnlinkingLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
         [FromServices] UnlinkingLocationHandler handler,
         CancellationToken cancellationToken)
     {
-        var command = new UnlinkingLocationCommand(departmentId, locationId);
-
-        var result = await handler.Handle(command, cancellationToken);
-        return result.IsFailure
-            ? result.Error.ToActionResult()
-            : Ok(Envelope.Ok(result.Value));
+        return await handler.Handle(new UnlinkingLocationCommand(departmentId, locationId), cancellationToken);
     }
 
     [HttpGet]

@@ -1,8 +1,8 @@
-using DirectoryService.API.Extensions;
+using DirectoryService.API.EndpointsResults;
 using DirectoryService.Application.Locations.Create;
 using DirectoryService.Application.Locations.Update;
 using DirectoryService.Contracts.Request.Location;
-using DirectoryService.Shared.Response;
+using DirectoryService.Domain.Locations;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.API.Controllers;
@@ -12,17 +12,22 @@ namespace DirectoryService.API.Controllers;
 public class LocationController : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult> Create(
+    public async Task<EndpointResult<LocationId>> Create(
         [FromBody] CreateLocationRequest request,
         [FromServices] CreateLocationHandler handler,
         CancellationToken cancellationToken)
     {
-        var command = new CreateLocationCommand(request);
-
-        var result = await handler.Handle(command, cancellationToken);
-        return result.IsFailure 
-            ? result.Error.ToActionResult() 
-            : Ok(Envelope.Ok(result.Value));
+        return await handler.Handle(new CreateLocationCommand(request), cancellationToken);
+    }
+    
+    [HttpPatch("{locationId:guid}")]
+    public async Task<EndpointResult<LocationId>> Update(
+        [FromRoute] Guid locationId,
+        [FromBody] UpdateLocationRequest request,
+        [FromServices] UpdateLocationHandler handler,
+        CancellationToken cancellationToken)
+    {
+        return await handler.Handle(new UpdateLocationCommand(locationId, request), cancellationToken);
     }
 
     [HttpGet]
@@ -35,21 +40,6 @@ public class LocationController : ControllerBase
     public Task<ActionResult> GetById([FromRoute] Guid locationId, CancellationToken cancellationToken)
     {
         return Task.FromResult<ActionResult>(Ok($"Location {locationId}"));
-    }
-
-    [HttpPatch("{locationId:guid}")]
-    public async Task<ActionResult> Update(
-        [FromRoute] Guid locationId,
-        [FromBody] UpdateLocationRequest request,
-        [FromServices] UpdateLocationHandler handler,
-        CancellationToken cancellationToken)
-    {
-        var command = new UpdateLocationCommand(locationId, request);
-
-        var result = await handler.Handle(command, cancellationToken);
-        return result.IsFailure
-            ? result.Error.ToActionResult()
-            : Ok(Envelope.Ok(result.Value));
     }
 
     [HttpDelete("{locationId:guid}")]
