@@ -27,7 +27,7 @@ public record Envelope
     public static Envelope Ok(object? result = null) =>
         new(result, null);
 
-    public static Envelope Error(AppError appErrors) =>
+    public static Envelope Error(AppError? appErrors) =>
         new(null, appErrors);
 }
 

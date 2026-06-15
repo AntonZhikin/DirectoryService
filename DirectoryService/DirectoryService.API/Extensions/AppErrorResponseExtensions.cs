@@ -6,7 +6,7 @@ namespace DirectoryService.API.Extensions;
 
 public static class AppErrorResponseExtensions
 {
-    private static int ToStatusCode(this ErrorType type) => type switch
+    public static int ToStatusCode(this ErrorType type) => type switch
     {
         ErrorType.VALIDATION  => StatusCodes.Status400BadRequest,
         ErrorType.NOT_FOUND   => StatusCodes.Status404NotFound,
