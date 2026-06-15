@@ -1,0 +1,45 @@
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
+using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Locations;
+using DirectoryService.Shared.ErrorManagement;
+using FluentValidation;
+using Microsoft.Extensions.Logging;
+
+namespace DirectoryService.Application.Locations.Update;
+
+public class UpdateLocationHandler(
+    IValidator<UpdateLocationCommand> validator,
+    ILocationRepository locationRepository,
+    ILogger<UpdateLocationHandler> logger
+    )
+{
+    public async Task<Result<LocationId, AppErrorList>> Handle(
+        UpdateLocationCommand command,
+        CancellationToken cancellationToken)
+    {
+        var validateResult = await validator.ValidateAsync(command, cancellationToken);
+        if (!validateResult.IsValid)
+            return validateResult.ToList();
+
+        var location = await locationRepository.FindByIdAsync(new LocationId(command.LocationId), cancellationToken);
+        if (location == null)
+        {
+            logger.LogDebug("Location not found");
+            return AppErrors.NotFound("location").ToErrorList();
+        }
+        
+        var request = command.Request;
+        
+        var updateResult = location.Update(request.Name, request.Address.City, request.Address.Street,
+            request.Address.HouseNumber, request.Address.Number, request.IsActive, request.TimeZone);
+        if (updateResult.IsFailure)
+            return updateResult.Error.ToErrorList();
+        
+        await locationRepository.SaveChangesAsync(location, cancellationToken);
+        
+        logger.LogInformation("Location successfully updated");
+        
+        return location.Id;
+    }
+}

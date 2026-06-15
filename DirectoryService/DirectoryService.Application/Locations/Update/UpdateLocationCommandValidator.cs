@@ -1,20 +1,20 @@
-using DirectoryService.Application.Validation;
-using DirectoryService.Domain.Location.ValueObjects;
+﻿using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Shared.ErrorManagement;
 using FluentValidation;
-using TimeZone = DirectoryService.Domain.Location.ValueObjects.TimeZone;
+using TimeZone = DirectoryService.Domain.Locations.ValueObjects.TimeZone;
 
-namespace DirectoryService.Application.Locations;
+namespace DirectoryService.Application.Locations.Update;
 
-public class CreateLocationCommandValidator : AbstractValidator<CreateLocationCommand>
+public class UpdateLocationCommandValidator : AbstractValidator<UpdateLocationCommand>
 {
-    public CreateLocationCommandValidator()
+    public UpdateLocationCommandValidator()
     {
         RuleFor(x => x.Request)
             .NotNull()
             .WithError(AppErrors.ValueIsInvalid("request"));
 
-        When(x => true, () =>
+        When(_ => true, () =>
         {
             RuleFor(x => x.Request.Name).MustBeValueObject(LocationName.Create);
 
@@ -23,7 +23,7 @@ public class CreateLocationCommandValidator : AbstractValidator<CreateLocationCo
             RuleFor(x => x.Request.Address)
                 .NotNull()
                 .WithError(AppErrors.ValueIsInvalid("address"));
-            
+
             RuleFor(x => x.Request.Address.City)
                 .NotNull()
                 .WithError(AppErrors.ValueIsInvalid("city"));

@@ -1,19 +1,19 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
-using DirectoryService.Domain.Location;
-using DirectoryService.Domain.Location.ValueObjects;
+using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Shared.ErrorManagement;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using TimeZone = DirectoryService.Domain.Location.ValueObjects.TimeZone;
+using TimeZone = DirectoryService.Domain.Locations.ValueObjects.TimeZone;
 
-namespace DirectoryService.Application.Locations;
+namespace DirectoryService.Application.Locations.Create;
 
 public class CreateLocationHandler(
     IValidator<CreateLocationCommand> validator, 
     ILocationRepository locationRepository,
-    ILogger<CreateLocationCommandValidator> logger)
+    ILogger<CreateLocationHandler> logger)
 {
     public async Task<Result<LocationId, AppErrorList>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
     {

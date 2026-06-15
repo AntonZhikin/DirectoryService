@@ -1,6 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Domain.DepartmentLocations;
+using DirectoryService.Domain.Locations;
 using DirectoryService.Shared.ErrorManagement;
 using Path = DirectoryService.Domain.Departments.ValueObjects.Path;
 
@@ -11,7 +13,7 @@ public sealed class Department
     // EfCore
     private Department() { }
     
-    private readonly List<DepartmentLocation.DepartmentLocation> _locations = [];
+    private readonly List<DepartmentLocation> _locations = [];
     private readonly List<DepartmentPosition> _positions = [];
     public DepartmentId Id { get; private set; }
     public DepartmentId? ParentId { get; private set; }
@@ -26,7 +28,7 @@ public sealed class Department
     public DateTime UpdatedAt { get; private set; }
     
     public List<Department> ChildrenDepartments = [];
-    public IReadOnlyList<DepartmentLocation.DepartmentLocation> Locations => _locations;
+    public IReadOnlyList<DepartmentLocations.DepartmentLocation> Locations => _locations;
     public IReadOnlyList<DepartmentPosition> Positions => _positions;
     private Department(
         DepartmentId id,
@@ -35,7 +37,7 @@ public sealed class Department
         Identifier identifier,
         Path path,
         int depth,
-        IEnumerable<DepartmentLocation.DepartmentLocation> departmentLocations)
+        IEnumerable<DepartmentLocations.DepartmentLocation> departmentLocations)
     {
         Id = id;
         ParentId = parentId;
@@ -53,7 +55,7 @@ public sealed class Department
     public static Result<Department, AppError> CreateParent(
         DepartmentName name,
         Identifier identifier,
-        IEnumerable<DepartmentLocation.DepartmentLocation> departmentLocations,
+        IEnumerable<DepartmentLocations.DepartmentLocation> departmentLocations,
         DepartmentId? departmentId = null)
     {
         var departmentLocationsList = departmentLocations.ToList();
@@ -79,7 +81,7 @@ public sealed class Department
         DepartmentName name,
         Identifier identifier,
         Department parent,
-        IEnumerable<DepartmentLocation.DepartmentLocation> departmentLocations,
+        IEnumerable<DepartmentLocations.DepartmentLocation> departmentLocations,
         DepartmentId? departmentId = null)
     {
         var departmentLocationsList = departmentLocations.ToList();
@@ -99,6 +101,49 @@ public sealed class Department
             path,
             parent.Depth + 1,
             departmentLocationsList);
+    }
+
+    public UnitResult<AppError> UpdateName(string requestName)
+    {
+        var newName = DepartmentName.Create(requestName);
+        if (newName.IsFailure)
+            return newName.Error;
+
+        Name = newName.Value;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<AppError>();
+    }
+
+    public Result<DepartmentLocation, AppError> AddLocation(LocationId locationId)
+    {
+        if (_locations.Any(l => l.LocationId == locationId))
+            return AppErrors.AlreadyExists("department location");
+
+        var departmentLocation = new DepartmentLocation
+        {
+            Id = new DepartmentLocationId(Guid.NewGuid()),
+            LocationId = locationId,
+            DepartmentId = Id,
+            IsPrimary = false,
+        };
+
+        _locations.Add(departmentLocation);
+        UpdatedAt = DateTime.UtcNow;
+
+        return departmentLocation;
+    }
+
+    public UnitResult<AppError> DeleteLocation(LocationId locationId)
+    {
+        var departmentLocation = _locations.FirstOrDefault(l => l.LocationId == locationId);
+        if (departmentLocation is null)
+            return AppErrors.NotFound("department location");
+        
+        _locations.Remove(departmentLocation);
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<AppError>();
     }
 }
 

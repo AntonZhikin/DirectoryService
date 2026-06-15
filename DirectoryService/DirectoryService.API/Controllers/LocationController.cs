@@ -1,4 +1,6 @@
 using DirectoryService.Application.Locations;
+using DirectoryService.Application.Locations.Create;
+using DirectoryService.Application.Locations.Update;
 using DirectoryService.Contracts.Request.Location;
 using DirectoryService.Shared.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +25,22 @@ public class LocationController : ControllerBase
 
         return Ok(Envelope.Ok(result.Value));
     }
+    
+    [HttpPatch("{locationId:guid}")]
+    public async Task<ActionResult> Update(
+        [FromRoute] Guid locationId,
+        [FromBody] UpdateLocationRequest request,
+        [FromServices] UpdateLocationHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var command =  new UpdateLocationCommand(locationId, request);
+        
+        var result = await handler.Handle(command, cancellationToken);
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+        
+        return Ok(Envelope.Ok(result.Value));
+    }
 
     [HttpGet]
     public async Task<ActionResult> Get(CancellationToken cancellationToken)
@@ -34,15 +52,6 @@ public class LocationController : ControllerBase
     public async Task<ActionResult> GetById([FromRoute] Guid locationId, CancellationToken cancellationToken)
     {
         return Ok($"Location {locationId}");
-    }
-
-    [HttpPut("{locationId:guid}")]
-    public async Task<ActionResult> Update(
-        [FromRoute] Guid locationId,
-        [FromBody] UpdateLocationRequest request,
-        CancellationToken cancellationToken)
-    {
-        return Ok($"Location {locationId} updated");
     }
 
     [HttpDelete("{locationId:guid}")]
