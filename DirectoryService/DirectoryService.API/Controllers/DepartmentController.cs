@@ -1,5 +1,4 @@
 using DirectoryService.API.EndpointsResults;
-using DirectoryService.API.Extensions;
 using DirectoryService.Application.Departments.Create;
 using DirectoryService.Application.Departments.Linking;
 using DirectoryService.Application.Departments.Unlinking;

@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Text.Json;
+using CSharpFunctionalExtensions;
 using DirectoryService.Shared.ErrorManagement;
 using FluentValidation;
 
@@ -18,13 +19,13 @@ public static class CustomValidators
             if (result.IsSuccess)
                 return;
 
-            context.AddFailure(result.Error.Serialize());
+            context.AddFailure(JsonSerializer.Serialize(result.Error));
         });
     }
 
     public static IRuleBuilderOptions<T, TProperty> WithError<T, TProperty>(
         this IRuleBuilderOptions<T, TProperty> rule, AppError error)
     {
-        return rule.WithMessage(error.Serialize());
+        return rule.WithMessage(JsonSerializer.Serialize(error));
     }
 }
