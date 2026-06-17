@@ -14,6 +14,7 @@ using DirectoryService.Infrastructure.Repositories.Departments;
 using DirectoryService.Shared.ErrorManagement;
 using DirectoryService.Shared.Response;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
@@ -27,6 +28,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Services.AddControllers();
+builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 
 builder.Services.AddOpenApi(options =>
 {
