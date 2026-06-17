@@ -29,27 +29,33 @@ public class LinkingLocationHandler(
         var department = await departmentRepository.FindByIdAsync(departmentId, cancellationToken);
         if (department == null)
         {
-            logger.LogDebug("Department not found");
+            logger.LogWarning("Department {DepartmentId} not found", command.DepartmentId);
             return AppErrors.NotFound(name: "department");
         }
 
         var location = await locationRepository.FindByIdAsync(locationId, cancellationToken);
         if (location == null)
         {
-            logger.LogDebug("Location not found");
+            logger.LogWarning("Location {LocationId} not found", command.LocationId);
             return AppErrors.NotFound(name: "location");
         }
 
         var addResult = department.AddLocation(locationId);
         if (addResult.IsFailure)
         {
-            logger.LogDebug("Relationship already exists");
+            logger.LogWarning(
+                "Location {LocationId} is already linked to department {DepartmentId}",
+                command.LocationId, command.DepartmentId);
             return addResult.Error;
         }
 
         var updateResult = await departmentRepository.SaveChangesAsync(department, cancellationToken);
         if (updateResult.IsFailure)
             return updateResult.Error;
+
+        logger.LogInformation(
+            "Location {LocationId} linked to department {DepartmentId} as {DepartmentLocationId}",
+            command.LocationId, command.DepartmentId, addResult.Value.Id.Value);
 
         return addResult.Value.Id;
     }

@@ -25,20 +25,20 @@ public class UpdateDepartmentHandler(
             .FindByIdAsync(new DepartmentId(command.DepartmentId), cancellationToken);
         if (departmentResult == null)
         {
-            logger.LogDebug("Department not found");
+            logger.LogWarning("Department {DepartmentId} not found", command.DepartmentId);
             return AppErrors.NotFound(name: "department");
         }
 
         var updateResult = departmentResult.UpdateName(command.Request.Name);
         if (updateResult.IsFailure)
             return updateResult.Error;
-        
+
         var result = await departmentRepository.SaveChangesAsync(departmentResult, cancellationToken);
         if (result.IsFailure)
             return result.Error;
-        
-        logger.LogInformation("Department updated");
-        
+
+        logger.LogInformation("Department {DepartmentId} renamed to {Name}", result.Value.Value, command.Request.Name);
+
         return result.Value;
     }
 }

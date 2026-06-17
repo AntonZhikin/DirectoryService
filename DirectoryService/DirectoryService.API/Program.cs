@@ -1,3 +1,4 @@
+using System.Globalization;
 using DirectoryService.API.Middlewares;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments.Create;
@@ -22,70 +23,89 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .MinimumLevel.Information()
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
     .WriteTo.Debug()
     .WriteTo.Seq(builder.Configuration.GetConnectionString("Seq") ?? throw new Exception("Not found connection string Seq"))
-    .CreateLogger();
+    .CreateBootstrapLogger();
 
-builder.Services.AddControllers();
-builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
-
-builder.Services.AddOpenApi(options =>
+try
 {
-    options.AddSchemaTransformer((schema, context, _) =>
+    Log.Information("Starting web application...");
+    
+    builder.Services.AddControllers();
+    builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
+
+    builder.Services.AddOpenApi(options =>
     {
-        if (context.JsonTypeInfo.Type == typeof(Envelope<AppError>))
+        options.AddSchemaTransformer((schema, context, _) =>
         {
-            if (schema.Properties.TryGetValue("Error", out var error))
+            if (context.JsonTypeInfo.Type == typeof(Envelope<AppError>))
             {
-                error.Items.Reference = new OpenApiReference
+                if (schema.Properties.TryGetValue("Error", out var error))
                 {
-                    Type = ReferenceType.Schema,
-                    Id = "Error"
-                };
+                    error.Items.Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = "Error" };
+                }
             }
-        }
-        return Task.CompletedTask;
+
+            return Task.CompletedTask;
+        });
     });
-});
 
-builder.Services.AddScoped<ApplicationDbContext>(_ =>
-    new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
+    builder.Services.AddScoped<ApplicationDbContext>(_ =>
+        new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
 
-builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
+    builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
 
-string? repositoryProvider = builder.Configuration["RepositoryProvider"];
+    string? repositoryProvider = builder.Configuration["RepositoryProvider"];
 
-if (repositoryProvider == "Dapper")
-    builder.Services.AddScoped<ILocationRepository, DapperLocationRepository>();
-else
-    builder.Services.AddScoped<ILocationRepository, EfCoreLocationRepository>();
+    if (repositoryProvider == "Dapper")
+        builder.Services.AddScoped<ILocationRepository, DapperLocationRepository>();
+    else
+        builder.Services.AddScoped<ILocationRepository, EfCoreLocationRepository>();
 
-builder.Services.AddScoped<IDepartmentRepository, EfCoreDepartmentRepository>();
+    builder.Services.AddScoped<IDepartmentRepository, EfCoreDepartmentRepository>();
 
-builder.Services.AddScoped<CreateDepartmentHandler>();
-builder.Services.AddScoped<CreateLocationHandler>();
-builder.Services.AddScoped<UpdateDepartmentHandler>();
-builder.Services.AddScoped<UpdateLocationHandler>();
-builder.Services.AddScoped<LinkingLocationHandler>();
-builder.Services.AddScoped<UnlinkingLocationHandler>();
+    builder.Services.AddScoped<CreateDepartmentHandler>();
+    builder.Services.AddScoped<CreateLocationHandler>();
+    builder.Services.AddScoped<UpdateDepartmentHandler>();
+    builder.Services.AddScoped<UpdateLocationHandler>();
+    builder.Services.AddScoped<LinkingLocationHandler>();
+    builder.Services.AddScoped<UnlinkingLocationHandler>();
 
-builder.Services.AddValidatorsFromAssembly(typeof(CustomValidators).Assembly);
+    builder.Services.AddValidatorsFromAssembly(typeof(CustomValidators).Assembly);
 
-builder.Services.AddSerilog();
+    builder.Services.AddSerilog((services, lc) => lc
+        .ReadFrom.Configuration(builder.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("ServiceName", "DirectoryService")
+    );
 
-var app = builder.Build();
+    var app = builder.Build();
 
-app.UseExceptionMiddleware();
+    app.UseExceptionMiddleware();
 
-if (app.Environment.IsDevelopment())
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference();
+    }
+
+    app.UseSerilogRequestLogging();
+
+    app.MapControllers();
+
+    app.Run();
+
+}
+catch (Exception ex)
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
 }
 
-app.UseSerilogRequestLogging();
 
-app.MapControllers();
-
-app.Run();
