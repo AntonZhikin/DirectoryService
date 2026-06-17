@@ -17,10 +17,6 @@ public class CreateDepartmentCommandValidator : AbstractValidator<CreateDepartme
         {
             RuleFor(x => x.Request.Name).MustBeValueObject(DepartmentName.Create);
             RuleFor(x => x.Request.Slug).MustBeValueObject(Identifier.Create);
-
-            RuleFor(x => x.Request.LocationIds)
-                .NotNull()
-                .WithError(AppErrors.ValueIsInvalid("locationIds"));
         });
     }
 }

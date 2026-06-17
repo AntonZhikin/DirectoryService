@@ -26,14 +26,22 @@ public class CreateLocationHandler(
             return AppErrors.AlreadyExists("location name");
 
         var addressResult = Address.Create(
-            command.Request.Address.City, 
+            command.Request.Address.City,
             command.Request.Address.Street,
             command.Request.Address.HouseNumber,
-            command.Request.Address.Number).Value;
-        var nameResult = LocationName.Create(command.Request.Name).Value;
-        var timeResult = TimeZone.Create(command.Request.TimeZone).Value;
-        
-        var location = new Location(nameResult, timeResult, addressResult);
+            command.Request.Address.Number);
+        if (addressResult.IsFailure)
+            return addressResult.Error;
+
+        var nameResult = LocationName.Create(command.Request.Name);
+        if (nameResult.IsFailure)
+            return nameResult.Error;
+
+        var timeResult = TimeZone.Create(command.Request.TimeZone);
+        if (timeResult.IsFailure)
+            return timeResult.Error;
+
+        var location = new Location(nameResult.Value, timeResult.Value, addressResult.Value);
         
         var result = await locationRepository.AddAsync(location, cancellationToken);
         if (result.IsFailure)

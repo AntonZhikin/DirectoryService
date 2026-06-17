@@ -1,4 +1,5 @@
-﻿using DirectoryService.Shared.ErrorManagement;
+﻿using System.Text.Json;
+using DirectoryService.Shared.ErrorManagement;
 using FluentValidation.Results;
 
 namespace DirectoryService.Application.Validation;
@@ -7,10 +8,14 @@ public static class ValidationExtensions
 {
     public static AppError ToAppError(this ValidationResult validationResult)
     {
-        var messages = validationResult.Errors
-            .Select(e => AppError.DeserializeToMessage(e.ErrorMessage, e.PropertyName))
-            .ToArray();
+        List<ValidationFailure> validationErrors = validationResult.Errors;
 
-        return AppError.Validation(messages);
+        IEnumerable<IReadOnlyList<AppErrorMessage>> errors =
+            from validationError in validationErrors
+            let errorMessage = validationError.ErrorMessage
+            let error = JsonSerializer.Deserialize<AppError>(errorMessage)
+            select error.Messages;
+        
+        return AppError.Validation(errors.SelectMany(e => e));
     }
 }

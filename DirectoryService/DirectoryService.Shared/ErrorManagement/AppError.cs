@@ -1,4 +1,6 @@
-﻿namespace DirectoryService.Shared.ErrorManagement;
+﻿using System.Text.Json.Serialization;
+
+namespace DirectoryService.Shared.ErrorManagement;
 
 public record AppErrorMessage(string Code, string Message, string? InvalidField = null);
 
@@ -8,7 +10,12 @@ public record AppError
 
     public ErrorType Type { get; }
 
-    private const string SEPARATOR = "||";
+    [JsonConstructor]
+    private AppError(IReadOnlyList<AppErrorMessage> messages, ErrorType type)
+    {
+        Messages = messages.ToArray();
+        Type = type;
+    }
 
     private AppError(IEnumerable<AppErrorMessage> messages, ErrorType type)
     {
@@ -34,30 +41,17 @@ public record AppError
     public static AppError UnExpected(string code, string message, string? invalidField = null)
         => new([new AppErrorMessage(code, message, invalidField)], ErrorType.UN_EXPECTED);
 
-    public static AppError Validation(params AppErrorMessage[] messages)
+    public static AppError Validation(params IEnumerable<AppErrorMessage> messages)
         => new(messages, ErrorType.VALIDATION);
 
-    public static AppError NotFound(params AppErrorMessage[] messages)
+    public static AppError NotFound(params IEnumerable<AppErrorMessage> messages)
         => new(messages, ErrorType.NOT_FOUND);
 
-    public static AppError Failure(params AppErrorMessage[] messages)
+    public static AppError Failure(params IEnumerable<AppErrorMessage> messages)
         => new(messages, ErrorType.FAILURE);
-    public string Serialize()
-    {
-        var first = Messages[0];
-        return string.Join(SEPARATOR, first.Code, first.Message);
-    }
-
-    public static AppErrorMessage DeserializeToMessage(string serialized, string? invalidField = null)
-    {
-        string[] parts = serialized.Split(SEPARATOR);
-
-        return parts.Length < 2 
-            ? throw new ArgumentException("Invalid serialized format") 
-            : new AppErrorMessage(parts[0], parts[1], invalidField);
-    }
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ErrorType
 {
     VALIDATION,
