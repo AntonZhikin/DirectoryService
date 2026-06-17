@@ -1,5 +1,6 @@
 using System.Globalization;
 using DirectoryService.API.Middlewares;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments.Create;
 using DirectoryService.Application.Departments.Linking;
@@ -66,12 +67,11 @@ try
 
     builder.Services.AddScoped<IDepartmentRepository, EfCoreDepartmentRepository>();
 
-    builder.Services.AddScoped<CreateDepartmentHandler>();
-    builder.Services.AddScoped<CreateLocationHandler>();
-    builder.Services.AddScoped<UpdateDepartmentHandler>();
-    builder.Services.AddScoped<UpdateLocationHandler>();
-    builder.Services.AddScoped<LinkingLocationHandler>();
-    builder.Services.AddScoped<UnlinkingLocationHandler>();
+    builder.Services.Scan(s => s.FromAssemblies(typeof(CustomValidators).Assembly)
+        .AddClasses(classes => classes
+            .AssignableToAny(typeof(ICommandHandler<,>), typeof(ICommandHandler<>)))
+        .AsSelfWithInterfaces()
+        .WithScopedLifetime());
 
     builder.Services.AddValidatorsFromAssembly(typeof(CustomValidators).Assembly);
 

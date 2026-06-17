@@ -1,4 +1,5 @@
 using DirectoryService.API.EndpointsResults;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Departments.Create;
 using DirectoryService.Application.Departments.Linking;
 using DirectoryService.Application.Departments.Unlinking;
@@ -17,7 +18,7 @@ public class DepartmentController : ControllerBase
     [HttpPost]
     public async Task<EndpointResult<DepartmentId>> Create(
         [FromBody] CreateDepartmentRequest request,
-        [FromServices] CreateDepartmentHandler handler,
+        [FromServices] ICommandHandler<DepartmentId, CreateDepartmentCommand> handler,
         CancellationToken cancellationToken)
     {
         var result = await handler.Handle(new CreateDepartmentCommand(request), cancellationToken);
@@ -28,7 +29,7 @@ public class DepartmentController : ControllerBase
     public async Task<EndpointResult<DepartmentId>> Update(
         [FromRoute] Guid departmentId,
         [FromBody] UpdateDepartmentRequest request,
-        [FromServices] UpdateDepartmentHandler handler,
+        [FromServices] ICommandHandler<DepartmentId, UpdateDepartmentCommand> handler,
         CancellationToken cancellationToken)
     {
         return await handler.Handle(new UpdateDepartmentCommand(departmentId, request), cancellationToken);
@@ -38,7 +39,7 @@ public class DepartmentController : ControllerBase
     public async Task<EndpointResult<DepartmentLocationId>> LinkingLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
-        [FromServices] LinkingLocationHandler handler,
+        [FromServices] ICommandHandler<DepartmentLocationId, LinkingLocationCommand> handler,
         CancellationToken cancellationToken)
     {
         var result = await handler.Handle(new LinkingLocationCommand(departmentId, locationId), cancellationToken);
@@ -49,7 +50,7 @@ public class DepartmentController : ControllerBase
     public async Task<EndpointResult<DepartmentId>> UnlinkingLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
-        [FromServices] UnlinkingLocationHandler handler,
+        [FromServices] ICommandHandler<DepartmentId, UnlinkingLocationCommand> handler,
         CancellationToken cancellationToken)
     {
         return await handler.Handle(new UnlinkingLocationCommand(departmentId, locationId), cancellationToken);

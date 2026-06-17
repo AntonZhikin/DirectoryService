@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Locations;
@@ -14,6 +15,7 @@ public class CreateLocationHandler(
     IValidator<CreateLocationCommand> validator, 
     ILocationRepository locationRepository,
     ILogger<CreateLocationHandler> logger)
+    : ICommandHandler<LocationId, CreateLocationCommand>
 {
     public async Task<Result<LocationId, AppError>> Handle(CreateLocationCommand command, CancellationToken cancellationToken)
     {

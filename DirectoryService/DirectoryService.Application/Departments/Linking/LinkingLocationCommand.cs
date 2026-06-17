@@ -1,3 +1,5 @@
-﻿namespace DirectoryService.Application.Departments.Linking;
+﻿using DirectoryService.Application.Abstraction;
 
-public record LinkingLocationCommand(Guid DepartmentId, Guid LocationId);
+namespace DirectoryService.Application.Departments.Linking;
+
+public record LinkingLocationCommand(Guid DepartmentId, Guid LocationId) : ICommand;

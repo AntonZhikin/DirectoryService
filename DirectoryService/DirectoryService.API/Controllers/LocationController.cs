@@ -1,4 +1,5 @@
 using DirectoryService.API.EndpointsResults;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations.Create;
 using DirectoryService.Application.Locations.Update;
 using DirectoryService.Contracts.Request.Location;
@@ -14,7 +15,7 @@ public class LocationController : ControllerBase
     [HttpPost]
     public async Task<EndpointResult<LocationId>> Create(
         [FromBody] CreateLocationRequest request,
-        [FromServices] CreateLocationHandler handler,
+        [FromServices] ICommandHandler<LocationId, CreateLocationCommand> handler,
         CancellationToken cancellationToken)
     {
         var result = await handler.Handle(new CreateLocationCommand(request), cancellationToken);
@@ -25,7 +26,7 @@ public class LocationController : ControllerBase
     public async Task<EndpointResult<LocationId>> Update(
         [FromRoute] Guid locationId,
         [FromBody] UpdateLocationRequest request,
-        [FromServices] UpdateLocationHandler handler,
+        [FromServices] ICommandHandler<LocationId, UpdateLocationCommand> handler,
         CancellationToken cancellationToken)
     {
         return await handler.Handle(new UpdateLocationCommand(locationId, request), cancellationToken);

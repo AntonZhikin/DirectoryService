@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Departments;
@@ -14,7 +15,7 @@ namespace DirectoryService.Application.Departments.Create;
 public class CreateDepartmentHandler(
     IValidator<CreateDepartmentCommand> validator,
     IDepartmentRepository departmentRepository,
-    ILogger<CreateDepartmentHandler> logger)
+    ILogger<CreateDepartmentHandler> logger) : ICommandHandler<DepartmentId, CreateDepartmentCommand>
 {
     public async Task<Result<DepartmentId, AppError>> Handle(
         CreateDepartmentCommand command,
