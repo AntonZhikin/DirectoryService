@@ -24,18 +24,27 @@ public class UnlinkingLocationHandler(
         var department = await departmentRepository.FindByIdAsync(new DepartmentId(command.DepartmentId), cancellationToken);
         if (department == null)
         {
-            logger.LogDebug("Department with id {CommandDepartmentId} not found", command.DepartmentId);
+            logger.LogWarning("Department {DepartmentId} not found", command.DepartmentId);
             return AppErrors.NotFound(name: "department");
         }
 
         var unlinkedDepartment = department.DeleteLocation(new LocationId(command.LocationId));
         if (unlinkedDepartment.IsFailure)
+        {
+            logger.LogWarning(
+                "Location {LocationId} is not linked to department {DepartmentId}",
+                command.LocationId, command.DepartmentId);
             return unlinkedDepartment.Error;
-        
+        }
+
         var result = await departmentRepository.SaveChangesAsync(department, cancellationToken);
         if (result.IsFailure)
             return result.Error;
-        
+
+        logger.LogInformation(
+            "Location {LocationId} unlinked from department {DepartmentId}",
+            command.LocationId, command.DepartmentId);
+
         return department.Id;
     }
 }

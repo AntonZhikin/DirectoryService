@@ -25,7 +25,7 @@ public class UpdateLocationHandler(
         var location = await locationRepository.FindByIdAsync(new LocationId(command.LocationId), cancellationToken);
         if (location == null)
         {
-            logger.LogDebug("Location not found");
+            logger.LogWarning("Location {LocationId} not found", command.LocationId);
             return AppErrors.NotFound(name: "location");
         }
 
@@ -35,11 +35,11 @@ public class UpdateLocationHandler(
             request.Address.HouseNumber, request.Address.Number, request.IsActive, request.TimeZone);
         if (updateResult.IsFailure)
             return updateResult.Error;
-        
+
         await locationRepository.SaveChangesAsync(location, cancellationToken);
-        
-        logger.LogInformation("Location successfully updated");
-        
+
+        logger.LogInformation("Location {LocationId} updated", location.Id.Value);
+
         return location.Id;
     }
 }
