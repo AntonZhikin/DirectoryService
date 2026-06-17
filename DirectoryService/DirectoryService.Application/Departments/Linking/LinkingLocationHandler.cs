@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Departments;
@@ -15,6 +16,7 @@ public class LinkingLocationHandler(
     IDepartmentRepository departmentRepository,
     ILocationRepository locationRepository,
     ILogger<LinkingLocationHandler> logger)
+    : ICommandHandler<DepartmentLocationId, LinkingLocationCommand>
 {
     public async Task<Result<DepartmentLocationId, AppError>> Handle(
         LinkingLocationCommand command, CancellationToken cancellationToken)

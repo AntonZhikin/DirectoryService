@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Departments;
@@ -12,6 +13,7 @@ public class UpdateDepartmentHandler(
     IValidator<UpdateDepartmentCommand> validator,
     IDepartmentRepository departmentRepository,
     ILogger<UpdateDepartmentHandler> logger)
+    : ICommandHandler<DepartmentId, UpdateDepartmentCommand>
 {
     public async Task<Result<DepartmentId, AppError>> Handle(
         UpdateDepartmentCommand command,

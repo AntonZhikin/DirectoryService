@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Locations;
@@ -13,6 +14,7 @@ public class UpdateLocationHandler(
     ILocationRepository locationRepository,
     ILogger<UpdateLocationHandler> logger
     )
+    : ICommandHandler<LocationId, UpdateLocationCommand>
 {
     public async Task<Result<LocationId, AppError>> Handle(
         UpdateLocationCommand command,
