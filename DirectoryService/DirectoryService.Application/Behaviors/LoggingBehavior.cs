@@ -1,3 +1,4 @@
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,10 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
 
         var response = await next(cancellationToken);
 
-        logger.LogInformation("Command {CommandName} handled successfully", commandName);
+        if (response is IResult { IsFailure: true })
+            logger.LogWarning("Command {CommandName} completed with failure", commandName);
+        else
+            logger.LogInformation("Command {CommandName} handled successfully", commandName);
 
         return response;
     }
