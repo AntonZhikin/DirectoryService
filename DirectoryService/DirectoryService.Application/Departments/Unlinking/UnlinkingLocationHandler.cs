@@ -1,29 +1,21 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Database;
-using DirectoryService.Application.Validation;
+using DirectoryService.Application.Database.Repository;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Shared.ErrorManagement;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Unlinking;
 
 public class UnlinkingLocationHandler(
-    IValidator<UnlinkingLocationCommand> validator,
     IDepartmentRepository departmentRepository,
-    ITransactionManager transactionManager,
     ILogger<UnlinkingLocationHandler> logger)
     : ICommandHandler<DepartmentId, UnlinkingLocationCommand>
 {
     public async Task<Result<DepartmentId, AppError>> Handle(
         UnlinkingLocationCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-            return validationResult.ToAppError();
-
         var department = await departmentRepository.FindByIdAsync(new DepartmentId(command.DepartmentId), cancellationToken);
         if (department == null)
         {
@@ -39,10 +31,6 @@ public class UnlinkingLocationHandler(
                 command.LocationId, command.DepartmentId);
             return unlinkedDepartment.Error;
         }
-
-        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-            return saveResult.Error;
 
         logger.LogInformation(
             "Location {LocationId} unlinked from department {DepartmentId}",

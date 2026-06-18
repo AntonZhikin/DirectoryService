@@ -1,4 +1,5 @@
 using DirectoryService.Application.Database;
+using DirectoryService.Application.Database.Repository;
 using DirectoryService.Domain.Locations;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,5 +21,12 @@ public class LocationRepository(ApplicationDbContext dbContext) : ILocationRepos
     public async Task<Location?> FindByIdAsync(LocationId requestLocationId, CancellationToken cancellationToken)
     {
         return await dbContext.Locations.FirstOrDefaultAsync(l => l.Id == requestLocationId, cancellationToken);
+    }
+
+    public void Remove(Location location) => dbContext.Locations.Remove(location);
+
+    public async Task<bool> HasDepartmentLinksAsync(LocationId id, CancellationToken cancellationToken)
+    {
+        return await dbContext.DepartmentLocations.AnyAsync(dl => dl.LocationId == id, cancellationToken);
     }
 }

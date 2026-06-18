@@ -1,12 +1,15 @@
 using System.Globalization;
 using DirectoryService.API.Middlewares;
-using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Behaviors;
 using DirectoryService.Application.Database;
+using DirectoryService.Application.Database.Repository;
+using DirectoryService.Application.Database.Transaction;
 using DirectoryService.Application.Validation;
 using DirectoryService.Infrastructure;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Repositories.Locations;
 using DirectoryService.Infrastructure.Repositories.Departments;
+using DirectoryService.Infrastructure.Repositories.Positions;
 using DirectoryService.Shared.ErrorManagement;
 using DirectoryService.Shared.Response;
 using FluentValidation;
@@ -54,13 +57,17 @@ try
 
     builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
+    builder.Services.AddScoped<IPositionRepository, PositionRepository>();
+
     builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 
-    builder.Services.Scan(s => s.FromAssemblies(typeof(CustomValidators).Assembly)
-        .AddClasses(classes => classes
-            .AssignableToAny(typeof(ICommandHandler<,>), typeof(ICommandHandler<>)))
-        .AsSelfWithInterfaces()
-        .WithScopedLifetime());
+    builder.Services.AddMediatR(cfg =>
+    {
+        cfg.RegisterServicesFromAssembly(typeof(CustomValidators).Assembly);
+        cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+        cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
+    });
 
     builder.Services.AddValidatorsFromAssembly(typeof(CustomValidators).Assembly);
 

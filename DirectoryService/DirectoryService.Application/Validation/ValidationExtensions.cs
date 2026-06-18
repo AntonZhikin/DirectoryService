@@ -15,7 +15,17 @@ public static class ValidationExtensions
             let errorMessage = validationError.ErrorMessage
             let error = JsonSerializer.Deserialize<AppError>(errorMessage)
             select error.Messages;
-        
+
         return AppError.Validation(errors.SelectMany(e => e));
+    }
+
+    public static AppError ToErrors(this List<ValidationResult> validationResults)
+    {
+        var errors = validationResults
+            .SelectMany(r => r.Errors)
+            .Select(e => JsonSerializer.Deserialize<AppError>(e.ErrorMessage))
+            .SelectMany(e => e!.Messages);
+
+        return AppError.Validation(errors);
     }
 }

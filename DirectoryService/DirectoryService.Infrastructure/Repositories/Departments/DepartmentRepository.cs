@@ -1,4 +1,4 @@
-using DirectoryService.Application.Database;
+using DirectoryService.Application.Database.Repository;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +16,13 @@ public class DepartmentRepository(ApplicationDbContext dbContext) : IDepartmentR
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
 
+    public async Task<Department?> FindByIdWithPositionsAsync(DepartmentId id, CancellationToken cancellationToken)
+    {
+        return await dbContext.Departments
+            .Include(d => d.Positions)
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
+
     public async Task<bool> AreLocationsExistAsync(
         IEnumerable<Guid> locationIds,
         CancellationToken cancellationToken)
@@ -26,5 +33,12 @@ public class DepartmentRepository(ApplicationDbContext dbContext) : IDepartmentR
             .CountAsync(cancellationToken);
 
         return foundCount == locationIdObjects.Count;
+    }
+
+    public void Remove(Department department) => dbContext.Departments.Remove(department);
+
+    public async Task<bool> HasChildrenAsync(DepartmentId id, CancellationToken cancellationToken)
+    {
+        return await dbContext.Departments.AnyAsync(d => d.ParentId == id, cancellationToken);
     }
 }
