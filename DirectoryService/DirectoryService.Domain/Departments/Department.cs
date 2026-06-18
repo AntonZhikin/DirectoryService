@@ -3,6 +3,7 @@ using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Positions;
 using DirectoryService.Shared.ErrorManagement;
 using Path = DirectoryService.Domain.Departments.ValueObjects.Path;
 
@@ -139,8 +140,38 @@ public sealed class Department
         var departmentLocation = _locations.FirstOrDefault(l => l.LocationId == locationId);
         if (departmentLocation is null)
             return AppErrors.NotFound(name: "department location");
-        
+
         _locations.Remove(departmentLocation);
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<AppError>();
+    }
+
+    public Result<DepartmentPosition, AppError> AddPosition(PositionId positionId)
+    {
+        if (_positions.Any(p => p.PositionId == positionId))
+            return AppErrors.AlreadyExists("department position");
+
+        var departmentPosition = new DepartmentPosition
+        {
+            Id = new DepartmentPositionId(Guid.NewGuid()),
+            PositionId = positionId,
+            DepartmentId = Id,
+        };
+
+        _positions.Add(departmentPosition);
+        UpdatedAt = DateTime.UtcNow;
+
+        return departmentPosition;
+    }
+
+    public UnitResult<AppError> DeletePosition(PositionId positionId)
+    {
+        var departmentPosition = _positions.FirstOrDefault(p => p.PositionId == positionId);
+        if (departmentPosition is null)
+            return AppErrors.NotFound(name: "department position");
+
+        _positions.Remove(departmentPosition);
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<AppError>();

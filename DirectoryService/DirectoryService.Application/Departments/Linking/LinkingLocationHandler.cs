@@ -1,31 +1,23 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Database;
-using DirectoryService.Application.Validation;
+using DirectoryService.Application.Database.Repository;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Shared.ErrorManagement;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Linking;
 
 public class LinkingLocationHandler(
-    IValidator<LinkingLocationCommand> validator,
     IDepartmentRepository departmentRepository,
     ILocationRepository locationRepository,
-    ITransactionManager transactionManager,
     ILogger<LinkingLocationHandler> logger)
     : ICommandHandler<DepartmentLocationId, LinkingLocationCommand>
 {
     public async Task<Result<DepartmentLocationId, AppError>> Handle(
         LinkingLocationCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-            return validationResult.ToAppError();
-
         var departmentId = new DepartmentId(command.DepartmentId);
         var locationId = new LocationId(command.LocationId);
 
@@ -51,10 +43,6 @@ public class LinkingLocationHandler(
                 command.LocationId, command.DepartmentId);
             return addResult.Error;
         }
-
-        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-            return saveResult.Error;
 
         logger.LogInformation(
             "Location {LocationId} linked to department {DepartmentId} as {DepartmentLocationId}",

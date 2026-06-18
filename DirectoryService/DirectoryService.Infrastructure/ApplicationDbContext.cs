@@ -1,6 +1,8 @@
-﻿using DirectoryService.Domain.Departments;
+﻿using DirectoryService.Domain.DepartmentPositions;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Positions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +13,8 @@ public class ApplicationDbContext(string connectionString) : DbContext
     public DbSet<Department> Departments { get; set; }
     public DbSet<Location> Locations { get; set; }
     public DbSet<DepartmentLocation> DepartmentLocations { get; set; }
+    public DbSet<Position> Positions { get; set; }
+    public DbSet<DepartmentPosition> DepartmentPositions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

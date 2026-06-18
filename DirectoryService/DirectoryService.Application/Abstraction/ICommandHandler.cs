@@ -1,16 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.ErrorManagement;
+using MediatR;
 
 namespace DirectoryService.Application.Abstraction;
 
-public interface ICommand;
+public interface ICommandHandler<TResponse, in TCommand> : IRequestHandler<TCommand, Result<TResponse, AppError>>
+    where TCommand : ICommand<TResponse>;
 
-public interface ICommandHandler<TResponse, in TCommand> where TCommand : ICommand
-{
-    Task<Result<TResponse, AppError>> Handle(TCommand command, CancellationToken cancellationToken);
-}
-
-public interface ICommandHandler<in TCommand> where TCommand : ICommand
-{
-    Task<UnitResult<AppError>> Handle(TCommand command, CancellationToken cancellationToken);
-}
+public interface ICommandHandler<in TCommand> : IRequestHandler<TCommand, UnitResult<AppError>>
+    where TCommand : ICommand;

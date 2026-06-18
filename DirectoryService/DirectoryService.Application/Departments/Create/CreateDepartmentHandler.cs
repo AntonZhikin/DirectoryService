@@ -1,38 +1,24 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Database;
-using DirectoryService.Application.Validation;
+using DirectoryService.Application.Database.Repository;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Shared.ErrorManagement;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Create;
 
 public class CreateDepartmentHandler(
-    IValidator<CreateDepartmentCommand> validator,
     IDepartmentRepository departmentRepository,
-    ITransactionManager transactionManager,
     ILogger<CreateDepartmentHandler> logger) : ICommandHandler<DepartmentId, CreateDepartmentCommand>
 {
     public async Task<Result<DepartmentId, AppError>> Handle(
         CreateDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-            return validationResult.ToAppError();
-
         var request = command.Request;
-
-        var transactionResult = await transactionManager.BeginTransaction(cancellationToken);
-        if (transactionResult.IsFailure)
-            return transactionResult.Error;
-
-        using var transaction = transactionResult.Value;
 
         if (request.LocationIds.Count > 0)
         {
@@ -82,17 +68,6 @@ public class CreateDepartmentHandler(
             return AppErrors.Failure("Failed to create department");
 
         departmentRepository.Add(departmentResult.Value);
-
-        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-        {
-            transaction.Rollback();
-            return saveResult.Error;
-        }
-
-        var commitResult = transaction.Commit();
-        if (commitResult.IsFailure)
-            return commitResult.Error;
 
         logger.LogInformation(
             "Department created: Id={DepartmentId}, Slug={Slug}, Path={Path}",

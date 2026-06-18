@@ -1,4 +1,6 @@
-﻿using DirectoryService.Domain.Positions.ValueObjects;
+using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Positions.ValueObjects;
+using DirectoryService.Shared.ErrorManagement;
 
 namespace DirectoryService.Domain.Positions;
 
@@ -6,15 +8,15 @@ public class Position
 {
     //EF Core
     private Position() { }
-    
-    public Position(PositionId id, PositionName name, PositionDescription description, bool isActive, DateTime createdAt, DateTime updatedAt)
+
+    public Position(PositionName name, PositionDescription description)
     {
-        Id = id;
+        Id = new PositionId(Guid.NewGuid());
         Name = name;
         Description = description;
-        IsActive = isActive;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
+        IsActive = true;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public PositionId Id { get; private set; }
@@ -23,4 +25,21 @@ public class Position
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
+
+    public UnitResult<AppError> Update(string name, string description)
+    {
+        var nameResult = PositionName.Create(name);
+        if (nameResult.IsFailure)
+            return nameResult.Error;
+
+        var descriptionResult = PositionDescription.Create(description);
+        if (descriptionResult.IsFailure)
+            return descriptionResult.Error;
+
+        Name = nameResult.Value;
+        Description = descriptionResult.Value;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<AppError>();
+    }
 }
