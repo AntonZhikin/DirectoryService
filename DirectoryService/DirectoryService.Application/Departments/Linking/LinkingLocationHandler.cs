@@ -15,6 +15,7 @@ public class LinkingLocationHandler(
     IValidator<LinkingLocationCommand> validator,
     IDepartmentRepository departmentRepository,
     ILocationRepository locationRepository,
+    ITransactionManager transactionManager,
     ILogger<LinkingLocationHandler> logger)
     : ICommandHandler<DepartmentLocationId, LinkingLocationCommand>
 {
@@ -51,9 +52,9 @@ public class LinkingLocationHandler(
             return addResult.Error;
         }
 
-        var updateResult = await departmentRepository.SaveChangesAsync(department, cancellationToken);
-        if (updateResult.IsFailure)
-            return updateResult.Error;
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return saveResult.Error;
 
         logger.LogInformation(
             "Location {LocationId} linked to department {DepartmentId} as {DepartmentLocationId}",

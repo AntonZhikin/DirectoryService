@@ -1,13 +1,10 @@
-using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Shared.ErrorManagement;
 
 namespace DirectoryService.Application.Database;
 
 public interface IDepartmentRepository
 {
-    Task<Result<DepartmentId, AppError>> AddAsync(Department department, CancellationToken cancellationToken);
+    void Add(Department department);
     Task<Department?> FindByIdAsync(DepartmentId id, CancellationToken cancellationToken);
     Task<bool> AreLocationsExistAsync(IEnumerable<Guid> locationIds, CancellationToken cancellationToken);
-    Task<Result<DepartmentId, AppError>> SaveChangesAsync(Department department, CancellationToken cancellationToken);
 }

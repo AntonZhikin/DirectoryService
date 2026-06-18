@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
@@ -12,8 +12,9 @@ using TimeZone = DirectoryService.Domain.Locations.ValueObjects.TimeZone;
 namespace DirectoryService.Application.Locations.Create;
 
 public class CreateLocationHandler(
-    IValidator<CreateLocationCommand> validator, 
+    IValidator<CreateLocationCommand> validator,
     ILocationRepository locationRepository,
+    ITransactionManager transactionManager,
     ILogger<CreateLocationHandler> logger)
     : ICommandHandler<LocationId, CreateLocationCommand>
 {
@@ -44,13 +45,15 @@ public class CreateLocationHandler(
             return timeResult.Error;
 
         var location = new Location(nameResult.Value, timeResult.Value, addressResult.Value);
-        
-        var result = await locationRepository.AddAsync(location, cancellationToken);
-        if (result.IsFailure)
-            return result.Error;
-        
+
+        locationRepository.Add(location);
+
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return saveResult.Error;
+
         logger.LogInformation("Location created successfully with Id {LocationId}", location.Id);
-        
+
         return location.Id;
     }
 }

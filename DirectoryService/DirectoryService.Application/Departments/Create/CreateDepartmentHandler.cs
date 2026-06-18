@@ -15,6 +15,7 @@ namespace DirectoryService.Application.Departments.Create;
 public class CreateDepartmentHandler(
     IValidator<CreateDepartmentCommand> validator,
     IDepartmentRepository departmentRepository,
+    ITransactionManager transactionManager,
     ILogger<CreateDepartmentHandler> logger) : ICommandHandler<DepartmentId, CreateDepartmentCommand>
 {
     public async Task<Result<DepartmentId, AppError>> Handle(
@@ -26,6 +27,12 @@ public class CreateDepartmentHandler(
             return validationResult.ToAppError();
 
         var request = command.Request;
+
+        var transactionResult = await transactionManager.BeginTransaction(cancellationToken);
+        if (transactionResult.IsFailure)
+            return transactionResult.Error;
+
+        using var transaction = transactionResult.Value;
 
         if (request.LocationIds.Count > 0)
         {
@@ -74,9 +81,18 @@ public class CreateDepartmentHandler(
         if (departmentResult.IsFailure)
             return AppErrors.Failure("Failed to create department");
 
-        var result = await departmentRepository.AddAsync(departmentResult.Value, cancellationToken);
-        if (result.IsFailure)
-            return result.Error;
+        departmentRepository.Add(departmentResult.Value);
+
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            transaction.Rollback();
+            return saveResult.Error;
+        }
+
+        var commitResult = transaction.Commit();
+        if (commitResult.IsFailure)
+            return commitResult.Error;
 
         logger.LogInformation(
             "Department created: Id={DepartmentId}, Slug={Slug}, Path={Path}",
@@ -84,6 +100,6 @@ public class CreateDepartmentHandler(
             departmentResult.Value.Slug,
             departmentResult.Value.Path.Value);
 
-        return result.Value;
+        return departmentResult.Value.Id;
     }
 }

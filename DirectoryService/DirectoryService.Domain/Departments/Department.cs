@@ -28,7 +28,7 @@ public sealed class Department
     public DateTime UpdatedAt { get; private set; }
     
     public List<Department> ChildrenDepartments = [];
-    public IReadOnlyList<DepartmentLocations.DepartmentLocation> Locations => _locations;
+    public IReadOnlyList<DepartmentLocation> Locations => _locations;
     public IReadOnlyList<DepartmentPosition> Positions => _positions;
     private Department(
         DepartmentId id,
@@ -37,7 +37,7 @@ public sealed class Department
         Identifier identifier,
         Path path,
         int depth,
-        IEnumerable<DepartmentLocations.DepartmentLocation> departmentLocations)
+        IEnumerable<DepartmentLocation> departmentLocations)
     {
         Id = id;
         ParentId = parentId;
@@ -55,7 +55,7 @@ public sealed class Department
     public static Result<Department, AppError> CreateParent(
         DepartmentName name,
         Identifier identifier,
-        IEnumerable<DepartmentLocations.DepartmentLocation> departmentLocations,
+        IEnumerable<DepartmentLocation> departmentLocations,
         DepartmentId? departmentId = null)
     {
         var departmentLocationsList = departmentLocations.ToList();
@@ -81,7 +81,7 @@ public sealed class Department
         DepartmentName name,
         Identifier identifier,
         Department parent,
-        IEnumerable<DepartmentLocations.DepartmentLocation> departmentLocations,
+        IEnumerable<DepartmentLocation> departmentLocations,
         DepartmentId? departmentId = null)
     {
         var departmentLocationsList = departmentLocations.ToList();

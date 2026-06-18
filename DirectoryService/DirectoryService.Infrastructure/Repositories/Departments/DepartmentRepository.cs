@@ -1,22 +1,13 @@
-using CSharpFunctionalExtensions;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Locations;
-using DirectoryService.Shared.ErrorManagement;
 using Microsoft.EntityFrameworkCore;
 
 namespace DirectoryService.Infrastructure.Repositories.Departments;
 
-public class EfCoreDepartmentRepository(ApplicationDbContext dbContext) : IDepartmentRepository
+public class DepartmentRepository(ApplicationDbContext dbContext) : IDepartmentRepository
 {
-    public async Task<Result<DepartmentId, AppError>> AddAsync(
-        Department department,
-        CancellationToken cancellationToken)
-    {
-        dbContext.Departments.Add(department);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return department.Id;
-    }
+    public void Add(Department department) => dbContext.Departments.Add(department);
 
     public async Task<Department?> FindByIdAsync(DepartmentId id, CancellationToken cancellationToken)
     {
@@ -35,12 +26,5 @@ public class EfCoreDepartmentRepository(ApplicationDbContext dbContext) : IDepar
             .CountAsync(cancellationToken);
 
         return foundCount == locationIdObjects.Count;
-    }
-
-    public async Task<Result<DepartmentId, AppError>> SaveChangesAsync(Department department, CancellationToken cancellationToken)
-    {
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return department.Id;
     }
 }

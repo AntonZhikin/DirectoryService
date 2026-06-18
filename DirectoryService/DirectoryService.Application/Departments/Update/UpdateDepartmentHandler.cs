@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
@@ -12,6 +12,7 @@ namespace DirectoryService.Application.Departments.Update;
 public class UpdateDepartmentHandler(
     IValidator<UpdateDepartmentCommand> validator,
     IDepartmentRepository departmentRepository,
+    ITransactionManager transactionManager,
     ILogger<UpdateDepartmentHandler> logger)
     : ICommandHandler<DepartmentId, UpdateDepartmentCommand>
 {
@@ -23,24 +24,24 @@ public class UpdateDepartmentHandler(
         if (!validateResult.IsValid)
             return validateResult.ToAppError();
 
-        var departmentResult = await departmentRepository
+        var department = await departmentRepository
             .FindByIdAsync(new DepartmentId(command.DepartmentId), cancellationToken);
-        if (departmentResult == null)
+        if (department == null)
         {
             logger.LogWarning("Department {DepartmentId} not found", command.DepartmentId);
             return AppErrors.NotFound(name: "department");
         }
 
-        var updateResult = departmentResult.UpdateName(command.Request.Name);
+        var updateResult = department.UpdateName(command.Request.Name);
         if (updateResult.IsFailure)
             return updateResult.Error;
 
-        var result = await departmentRepository.SaveChangesAsync(departmentResult, cancellationToken);
-        if (result.IsFailure)
-            return result.Error;
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return saveResult.Error;
 
-        logger.LogInformation("Department {DepartmentId} renamed to {Name}", result.Value.Value, command.Request.Name);
+        logger.LogInformation("Department {DepartmentId} renamed to {Name}", department.Id.Value, command.Request.Name);
 
-        return result.Value;
+        return department.Id;
     }
 }
