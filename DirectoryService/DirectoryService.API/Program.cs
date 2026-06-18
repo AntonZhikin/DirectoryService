@@ -2,12 +2,6 @@ using System.Globalization;
 using DirectoryService.API.Middlewares;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
-using DirectoryService.Application.Departments.Create;
-using DirectoryService.Application.Departments.Linking;
-using DirectoryService.Application.Departments.Unlinking;
-using DirectoryService.Application.Departments.Update;
-using DirectoryService.Application.Locations.Create;
-using DirectoryService.Application.Locations.Update;
 using DirectoryService.Application.Validation;
 using DirectoryService.Infrastructure;
 using DirectoryService.Infrastructure.Database;
@@ -56,16 +50,11 @@ try
     builder.Services.AddScoped<ApplicationDbContext>(_ =>
         new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
 
-    builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
+    builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
-    string? repositoryProvider = builder.Configuration["RepositoryProvider"];
+    builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
-    if (repositoryProvider == "Dapper")
-        builder.Services.AddScoped<ILocationRepository, DapperLocationRepository>();
-    else
-        builder.Services.AddScoped<ILocationRepository, EfCoreLocationRepository>();
-
-    builder.Services.AddScoped<IDepartmentRepository, EfCoreDepartmentRepository>();
+    builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 
     builder.Services.Scan(s => s.FromAssemblies(typeof(CustomValidators).Assembly)
         .AddClasses(classes => classes

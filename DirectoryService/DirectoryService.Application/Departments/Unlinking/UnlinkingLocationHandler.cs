@@ -13,6 +13,7 @@ namespace DirectoryService.Application.Departments.Unlinking;
 public class UnlinkingLocationHandler(
     IValidator<UnlinkingLocationCommand> validator,
     IDepartmentRepository departmentRepository,
+    ITransactionManager transactionManager,
     ILogger<UnlinkingLocationHandler> logger)
     : ICommandHandler<DepartmentId, UnlinkingLocationCommand>
 {
@@ -39,9 +40,9 @@ public class UnlinkingLocationHandler(
             return unlinkedDepartment.Error;
         }
 
-        var result = await departmentRepository.SaveChangesAsync(department, cancellationToken);
-        if (result.IsFailure)
-            return result.Error;
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return saveResult.Error;
 
         logger.LogInformation(
             "Location {LocationId} unlinked from department {DepartmentId}",

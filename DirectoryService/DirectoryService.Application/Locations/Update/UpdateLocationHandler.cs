@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
@@ -12,8 +12,8 @@ namespace DirectoryService.Application.Locations.Update;
 public class UpdateLocationHandler(
     IValidator<UpdateLocationCommand> validator,
     ILocationRepository locationRepository,
-    ILogger<UpdateLocationHandler> logger
-    )
+    ITransactionManager transactionManager,
+    ILogger<UpdateLocationHandler> logger)
     : ICommandHandler<LocationId, UpdateLocationCommand>
 {
     public async Task<Result<LocationId, AppError>> Handle(
@@ -38,7 +38,9 @@ public class UpdateLocationHandler(
         if (updateResult.IsFailure)
             return updateResult.Error;
 
-        await locationRepository.SaveChangesAsync(location, cancellationToken);
+        var saveResult = await transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return saveResult.Error;
 
         logger.LogInformation("Location {LocationId} updated", location.Id.Value);
 
