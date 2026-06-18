@@ -1,8 +1,10 @@
 using DirectoryService.API.EndpointsResults;
-using DirectoryService.Application.Locations.Create;
-using DirectoryService.Application.Locations.Delete;
-using DirectoryService.Application.Locations.Update;
+using DirectoryService.Application.Locations.Commands.Create;
+using DirectoryService.Application.Locations.Commands.Delete;
+using DirectoryService.Application.Locations.Commands.Update;
+using DirectoryService.Application.Locations.Queries.GetById;
 using DirectoryService.Contracts.Request.Location;
+using DirectoryService.Contracts.Response.Location;
 using DirectoryService.Domain.Locations;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -46,8 +48,10 @@ public class LocationController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("{locationId:guid}")]
-    public Task<ActionResult> GetById([FromRoute] Guid locationId, CancellationToken cancellationToken)
+    public async Task<EndpointResult<LocationDto>> GetById(
+        [FromRoute] Guid locationId,
+        CancellationToken cancellationToken)
     {
-        return Task.FromResult<ActionResult>(Ok($"Location {locationId}"));
+        return await mediator.Send(new GetLocationByIdQuery(locationId), cancellationToken);
     }
 }

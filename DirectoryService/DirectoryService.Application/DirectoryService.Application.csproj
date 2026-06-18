@@ -14,8 +14,16 @@
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="12.1.1" />
       <PackageReference Include="MediatR" Version="14.1.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0-preview.5.25277.114" />
       <PackageReference Include="Microsoft.OpenApi" Version="1.6.17" />
       <PackageReference Include="Scrutor" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Departments\Commands\" />
+      <Folder Include="Departments\Queries\" />
+      <Folder Include="Locations\Commands\" />
+      <Folder Include="Locations\Queries\" />
     </ItemGroup>
 
 </Project>
