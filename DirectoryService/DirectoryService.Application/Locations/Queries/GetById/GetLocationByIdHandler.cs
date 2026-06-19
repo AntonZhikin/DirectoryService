@@ -27,11 +27,13 @@ public class GetLocationByIdHandler(IReadDbContext readDbContext)
             dto.Id.Value,
             dto.Name.Value,
             dto.TimeZone.Value,
-            new AddressDto(
-                dto.Address.City,
-                dto.Address.Street,
-                dto.Address.HouseNumber,
-                dto.Address.Number));
+            new AddressDto
+            {
+                City = dto.Address.City,
+                Street = dto.Address.Street,
+                HouseNumber = dto.Address.HouseNumber,
+                Number = dto.Address.Number
+            });
         
     }
 }
