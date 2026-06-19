@@ -17,7 +17,7 @@ public class GetTopLocationsHandler(IDbConnectionFactory connectionFactory)
     {
         using var connection = await connectionFactory.CreateConnectionAsync(cancellationToken);
 
-        var locationDto = await connection.QueryAsync<LocationTopDto, AddressDto, LocationTopDto>(
+        var locationsDto = await connection.QueryAsync<LocationTopDto, AddressDto, LocationTopDto>(
             """
             SELECT
                 locations.id,
@@ -30,12 +30,12 @@ public class GetTopLocationsHandler(IDbConnectionFactory connectionFactory)
             FROM locations
             JOIN department_locations ON locations.id = department_locations.location_id
             GROUP BY locations.id, name, city, street, house_number, number
-            ORDER BY department_count DESC
+            ORDER BY department_count DESC, name ASC
             LIMIT 5
             """,
             splitOn: "city",
             map: (location, address) => location with { Address = address });
         
-        return locationDto.ToList();
+        return locationsDto.ToList();
     }
 }
