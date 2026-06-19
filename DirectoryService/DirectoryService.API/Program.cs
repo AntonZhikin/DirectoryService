@@ -55,6 +55,9 @@ try
     
     builder.Services.AddScoped<IReadDbContext, ApplicationDbContext>(_ =>
         new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
+    
+    builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
+    Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
     builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
