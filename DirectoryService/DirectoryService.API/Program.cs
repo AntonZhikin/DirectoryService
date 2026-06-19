@@ -52,6 +52,9 @@ try
 
     builder.Services.AddScoped<ApplicationDbContext>(_ =>
         new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
+    
+    builder.Services.AddScoped<IReadDbContext, ApplicationDbContext>(_ =>
+        new ApplicationDbContext(builder.Configuration.GetConnectionString("DatabaseConnection")!));
 
     builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
