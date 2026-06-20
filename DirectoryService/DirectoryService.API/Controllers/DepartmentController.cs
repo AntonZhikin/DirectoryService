@@ -7,7 +7,9 @@ using DirectoryService.Application.Departments.Commands.Unlinking;
 using DirectoryService.Application.Departments.Commands.UnlinkingPosition;
 using DirectoryService.Application.Departments.Commands.Update;
 using DirectoryService.Application.Departments.Queries.GetById;
+using DirectoryService.Application.Departments.Queries.GetList;
 using DirectoryService.Contracts.Request.Department;
+using DirectoryService.Contracts.Response;
 using DirectoryService.Contracts.Response.Department;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.DepartmentPositions;
@@ -86,9 +88,11 @@ public class DepartmentController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet]
-    public Task<ActionResult> Get(CancellationToken cancellationToken)
+    public async Task<EndpointResult<PagedResult<DepartmentListItemDto>>> Get(
+        [FromQuery] GetDepartmentsRequest request,
+        CancellationToken cancellationToken)
     {
-        return Task.FromResult<ActionResult>(Ok("Departments list"));
+        return await mediator.Send(new GetDepartmentsQuery(request), cancellationToken);
     }
 
     [HttpGet("{departmentId:guid}")]
