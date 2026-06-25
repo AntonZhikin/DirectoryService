@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DirectoryService.Application.Departments.Queries.GetList;
 
 public class GetDepartmentsHandler(IReadDbContext readDbContext)
-    : IQueryHandler<PagedResult<DepartmentListItemDto>, GetDepartmentsQuery>
+    : IQueryHandler<PagedResult<DepartmentListItemDto>, GetDepartmentsQuery> 
 {
     public async Task<Result<PagedResult<DepartmentListItemDto>, AppError>> Handle(
         GetDepartmentsQuery query,
