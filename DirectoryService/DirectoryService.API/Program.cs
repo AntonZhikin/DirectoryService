@@ -24,7 +24,8 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
     .WriteTo.Debug()
-    .WriteTo.Seq(builder.Configuration.GetConnectionString("Seq") ?? throw new Exception("Not found connection string Seq"))
+    .WriteTo.Seq(builder.Configuration.GetConnectionString("Seq")
+                 ?? throw new Exception("Not found connection string Seq"))
     .CreateBootstrapLogger();
 
 try

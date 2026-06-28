@@ -4,7 +4,9 @@ using DirectoryService.Application.Locations.Commands.Delete;
 using DirectoryService.Application.Locations.Commands.Update;
 using DirectoryService.Application.Locations.Queries.GetTop;
 using DirectoryService.Application.Locations.Queries.GetById;
+using DirectoryService.Application.Locations.Queries.GetList;
 using DirectoryService.Contracts.Request.Location;
+using DirectoryService.Contracts.Response;
 using DirectoryService.Contracts.Response.Location;
 using DirectoryService.Domain.Locations;
 using MediatR;
@@ -54,5 +56,13 @@ public class LocationController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken)
     {
         return await mediator.Send(new GetLocationByIdQuery(locationId), cancellationToken);
+    }
+    
+    [HttpGet]
+    public async Task<EndpointResult<PagedResult<LocationListItemDto>>> Get(
+        [FromQuery] GetLocationsRequest request,
+        CancellationToken cancellationToken)
+    {
+        return await mediator.Send(new GetLocationsQuery(request), cancellationToken);
     }
 }
