@@ -3,6 +3,7 @@ using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Database;
+using DirectoryService.Application.Locations.Dtos;
 using DirectoryService.Contracts.Dtos;
 using DirectoryService.Contracts.Response;
 using DirectoryService.Contracts.Response.Location;
