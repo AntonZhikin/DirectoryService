@@ -8,5 +8,5 @@ public record LocationRowDto(
     string HouseNumber,
     string Number,
     DateTime CreatedAt,
-    int DepartmentCount,
-    int TotalCount);
+    long DepartmentCount,
+    long TotalCount);
