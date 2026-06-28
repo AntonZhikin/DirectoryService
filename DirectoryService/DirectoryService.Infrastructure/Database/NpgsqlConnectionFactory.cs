@@ -3,7 +3,7 @@ using DirectoryService.Application.Database;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-
+////https:/t.me/+2WwwviP41mZkODQ6
 namespace DirectoryService.Infrastructure.Database;
 
 public class NpgsqlConnectionFactory : IDisposable, IAsyncDisposable, IDbConnectionFactory
