@@ -28,7 +28,9 @@ public class DeleteLocationHandler(
         if (hasLinks)
             return AppErrors.AlreadyExists("location has linked departments");
 
-        locationRepository.Remove(location);
+        var deleteResult = location.Delete();
+        if (deleteResult.IsFailure)
+            return deleteResult.Error;
 
         logger.LogInformation("Location {LocationId} deleted", location.Id.Value);
 

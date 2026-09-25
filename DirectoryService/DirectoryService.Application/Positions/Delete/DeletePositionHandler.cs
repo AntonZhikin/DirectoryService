@@ -28,7 +28,9 @@ public class DeletePositionHandler(
         if (hasLinks)
             return AppErrors.AlreadyExists("position has linked departments");
 
-        positionRepository.Remove(position);
+        var deleteResult = position.Delete();
+        if (deleteResult.IsFailure)
+            return deleteResult.Error;
 
         logger.LogInformation("Position {PositionId} deleted", position.Id.Value);
 

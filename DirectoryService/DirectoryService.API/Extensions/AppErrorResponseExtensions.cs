@@ -12,8 +12,6 @@ public static class AppErrorResponseExtensions
         ErrorType.NOT_FOUND   => StatusCodes.Status404NotFound,
         ErrorType.CONFLICT    => StatusCodes.Status409Conflict,
         ErrorType.EXTERNAL    => StatusCodes.Status502BadGateway,
-        ErrorType.FAILURE     => StatusCodes.Status500InternalServerError,
-        ErrorType.UN_EXPECTED => StatusCodes.Status500InternalServerError,
         _                     => StatusCodes.Status500InternalServerError,
     };
 

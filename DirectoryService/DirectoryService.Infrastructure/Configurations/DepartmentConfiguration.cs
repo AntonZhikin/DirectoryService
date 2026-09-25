@@ -70,6 +70,15 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired()
             .HasColumnName("updated_at");
 
+        builder.Property(x => x.IsDeleted)
+            .IsRequired()
+            .HasColumnName("is_deleted");
+
+        builder.Property(x => x.DeletedAt)
+            .HasColumnName("deleted_at");
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
+
         builder.HasMany(x => x.ChildrenDepartments)
             .WithOne(x => x.Parent)
             .IsRequired(false)
