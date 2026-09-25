@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectoryService.API", "Dir
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectoryService.Shared", "DirectoryService.Shared\DirectoryService.Shared.csproj", "{C4E5B27C-BF32-4971-833C-6ADF29BEFED3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "directory-tests", "directory-tests", "{62553E2A-6C7E-4B5F-B817-6B69C04CFE18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectoryService.IntegrationTests", "directory-tests\DirectoryService.IntegrationTests\DirectoryService.IntegrationTests.csproj", "{CA51E55A-DE52-45EB-A612-9F049BB509F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +46,12 @@ Global
 		{C4E5B27C-BF32-4971-833C-6ADF29BEFED3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4E5B27C-BF32-4971-833C-6ADF29BEFED3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4E5B27C-BF32-4971-833C-6ADF29BEFED3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA51E55A-DE52-45EB-A612-9F049BB509F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA51E55A-DE52-45EB-A612-9F049BB509F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA51E55A-DE52-45EB-A612-9F049BB509F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA51E55A-DE52-45EB-A612-9F049BB509F3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CA51E55A-DE52-45EB-A612-9F049BB509F3} = {62553E2A-6C7E-4B5F-B817-6B69C04CFE18}
 	EndGlobalSection
 EndGlobal
