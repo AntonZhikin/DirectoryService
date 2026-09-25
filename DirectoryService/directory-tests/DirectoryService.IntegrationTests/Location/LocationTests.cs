@@ -194,8 +194,48 @@ public class LocationTests(DirectoryTestWebFactory factory) : DirectoryBaseTests
 
         await ExecuteInDb(async dbContext =>
         {
+            var location = await dbContext.Locations
+                .IgnoreQueryFilters()
+                .FirstAsync(l => l.Id == locationId, cancellationToken);
+
+            Assert.True(location.IsDeleted);
+            Assert.NotNull(location.DeletedAt);
             Assert.False(await dbContext.Locations.AnyAsync(l => l.Id == locationId, cancellationToken));
         });
+    }
+
+    [Fact]
+    public async Task DeleteLocation_Should_Hide_Location_From_GetById()
+    {
+        LocationId locationId = await CreateLocation("Главный офис");
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteLocationCommand(locationId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new GetLocationByIdQuery(locationId.Value), cancellationToken));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task DeleteLocation_Twice_Should_Return_NotFound()
+    {
+        LocationId locationId = await CreateLocation("Главный офис");
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteLocationCommand(locationId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new DeleteLocationCommand(locationId.Value), cancellationToken));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
     }
 
     [Fact]
