@@ -20,17 +20,19 @@ public class GetTopLocationsHandler(IDbConnectionFactory connectionFactory)
         var locationsDto = await connection.QueryAsync<LocationTopDto, AddressDto, LocationTopDto>(
             """
             SELECT
-                locations.id,
-                name,
-                COUNT(department_locations.department_id) AS department_count,
-                city,
-                street,
-                house_number,
-                number
-            FROM locations
-            JOIN department_locations ON locations.id = department_locations.location_id
-            GROUP BY locations.id, name, city, street, house_number, number
-            ORDER BY department_count DESC, name ASC
+                l.id,
+                l.name,
+                COUNT(d.id) AS department_count,
+                l.city,
+                l.street,
+                l.house_number,
+                l.number
+            FROM locations l
+            JOIN department_locations dl ON l.id = dl.location_id
+            JOIN departments d ON d.id = dl.department_id AND d.is_deleted = false
+            WHERE l.is_deleted = false
+            GROUP BY l.id, l.name, l.city, l.street, l.house_number, l.number
+            ORDER BY department_count DESC, l.name ASC
             LIMIT 5
             """,
             splitOn: "city",
