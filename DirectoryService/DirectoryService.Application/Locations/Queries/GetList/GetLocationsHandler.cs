@@ -52,12 +52,14 @@ public class GetLocationsHandler(IDbConnectionFactory connectionFactory)
                                  l.house_number,
                                  l.number,
                                  l.created_at,
-                                 COUNT(dl.department_id) AS department_count
+                                 COUNT(d.id) AS department_count
                           FROM locations l
                                    LEFT JOIN department_locations dl ON l.id = dl.location_id
-                          WHERE l.name ILIKE '%' || @search || '%'
+                                   LEFT JOIN departments d ON d.id = dl.department_id AND d.is_deleted = false
+                          WHERE l.is_deleted = false
+                            AND l.name ILIKE '%' || @search || '%'
                           GROUP BY l.id
-                          HAVING COUNT(dl.department_id) >= @min_departments
+                          HAVING COUNT(d.id) >= @min_departments
                       )
                       SELECT *,
                              COUNT(*) OVER() AS total_count

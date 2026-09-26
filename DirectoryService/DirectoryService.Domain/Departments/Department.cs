@@ -27,6 +27,10 @@ public sealed class Department
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
+
+    public bool IsDeleted { get; private set; }
+
+    public DateTime? DeletedAt { get; private set; }
     
     public List<Department> ChildrenDepartments = [];
     public IReadOnlyList<DepartmentLocation> Locations => _locations;
@@ -176,5 +180,16 @@ public sealed class Department
 
         return UnitResult.Success<AppError>();
     }
-}
 
+    public UnitResult<AppError> Delete()
+    {
+        if (IsDeleted)
+            return AppError.Conflict("record.already.deleted", "Запись уже удалена");
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<AppError>();
+    }
+}

@@ -26,6 +26,10 @@ public class Position
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
+    public bool IsDeleted { get; private set; }
+
+    public DateTime? DeletedAt { get; private set; }
+
     public UnitResult<AppError> Update(string name, string description)
     {
         var nameResult = PositionName.Create(name);
@@ -38,6 +42,18 @@ public class Position
 
         Name = nameResult.Value;
         Description = descriptionResult.Value;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<AppError>();
+    }
+
+    public UnitResult<AppError> Delete()
+    {
+        if (IsDeleted)
+            return AppError.Conflict("record.already.deleted", "Запись уже удалена");
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<AppError>();

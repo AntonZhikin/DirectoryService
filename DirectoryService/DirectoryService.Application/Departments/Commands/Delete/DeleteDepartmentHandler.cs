@@ -28,7 +28,9 @@ public class DeleteDepartmentHandler(
         if (hasChildren)
             return AppErrors.AlreadyExists("department has child departments");
 
-        departmentRepository.Remove(department);
+        var deleteResult = department.Delete();
+        if (deleteResult.IsFailure)
+            return deleteResult.Error;
 
         logger.LogInformation("Department {DepartmentId} deleted", department.Id.Value);
 

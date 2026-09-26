@@ -29,6 +29,10 @@ public sealed class Location
 
     public DateTime UpdatedAt { get; private set; }
 
+    public bool IsDeleted { get; private set; }
+
+    public DateTime? DeletedAt { get; private set; }
+
     public Location(LocationName name, TimeZone timeZone, Address address)
     {
         Id = new LocationId(Guid.NewGuid());
@@ -58,6 +62,18 @@ public sealed class Location
         Address = addressResult.Value;
         IsActive = active;
         TimeZone = timeZoneResult.Value;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<AppError>();
+    }
+
+    public UnitResult<AppError> Delete()
+    {
+        if (IsDeleted)
+            return AppError.Conflict("record.already.deleted", "Запись уже удалена");
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<AppError>();

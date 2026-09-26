@@ -24,6 +24,8 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("ConnectionStrings:DatabaseConnection", _dbContainer.GetConnectionString());
+
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<ApplicationDbContext>();

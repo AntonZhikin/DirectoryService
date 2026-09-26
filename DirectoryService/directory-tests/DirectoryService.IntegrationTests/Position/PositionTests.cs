@@ -161,8 +161,54 @@ public class PositionTests(DirectoryTestWebFactory factory) : DirectoryBaseTests
 
         await ExecuteInDb(async dbContext =>
         {
+            var position = await dbContext.Positions
+                .IgnoreQueryFilters()
+                .FirstAsync(p => p.Id == positionId, cancellationToken);
+
+            Assert.True(position.IsDeleted);
+            Assert.NotNull(position.DeletedAt);
             Assert.False(await dbContext.Positions.AnyAsync(p => p.Id == positionId, cancellationToken));
         });
+    }
+
+    [Fact]
+    public async Task UpdatePosition_After_Delete_Should_Return_NotFound()
+    {
+        PositionId positionId = await CreatePosition();
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeletePositionCommand(positionId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+        {
+            var command = new UpdatePositionCommand(
+                positionId.Value,
+                new UpdatePositionRequest("Тимлид", "Руководит командой"));
+
+            return sut.Send(command, cancellationToken);
+        });
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task DeletePosition_Twice_Should_Return_NotFound()
+    {
+        PositionId positionId = await CreatePosition();
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeletePositionCommand(positionId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new DeletePositionCommand(positionId.Value), cancellationToken));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
     }
 
     [Fact]

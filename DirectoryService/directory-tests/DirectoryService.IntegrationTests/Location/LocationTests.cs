@@ -1,4 +1,5 @@
-﻿using DirectoryService.Application.Locations.Commands.Create;
+﻿using DirectoryService.Application.Departments.Commands.Delete;
+using DirectoryService.Application.Locations.Commands.Create;
 using DirectoryService.Application.Locations.Commands.Delete;
 using DirectoryService.Application.Locations.Commands.Update;
 using DirectoryService.Application.Locations.Queries.GetById;
@@ -194,8 +195,48 @@ public class LocationTests(DirectoryTestWebFactory factory) : DirectoryBaseTests
 
         await ExecuteInDb(async dbContext =>
         {
+            var location = await dbContext.Locations
+                .IgnoreQueryFilters()
+                .FirstAsync(l => l.Id == locationId, cancellationToken);
+
+            Assert.True(location.IsDeleted);
+            Assert.NotNull(location.DeletedAt);
             Assert.False(await dbContext.Locations.AnyAsync(l => l.Id == locationId, cancellationToken));
         });
+    }
+
+    [Fact]
+    public async Task DeleteLocation_Should_Hide_Location_From_GetById()
+    {
+        LocationId locationId = await CreateLocation("Главный офис");
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteLocationCommand(locationId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new GetLocationByIdQuery(locationId.Value), cancellationToken));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task DeleteLocation_Twice_Should_Return_NotFound()
+    {
+        LocationId locationId = await CreateLocation("Главный офис");
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteLocationCommand(locationId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new DeleteLocationCommand(locationId.Value), cancellationToken));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
     }
 
     [Fact]
@@ -331,6 +372,58 @@ public class LocationTests(DirectoryTestWebFactory factory) : DirectoryBaseTests
         Assert.Empty(result.Value);
     }
 
+    [Fact]
+    public async Task GetLocations_Should_Skip_Deleted_Locations_And_Departments()
+    {
+        LocationId moscowOffice = await CreateLocation("Moscow Office");
+        LocationId moscowWarehouse = await CreateLocation("Moscow Warehouse");
+        await CreateDepartment("Отдел продаж", "sales", moscowOffice);
+        DepartmentId deletedDepartmentId = await CreateDepartment("Бухгалтерия", "accounting", moscowOffice);
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteLocationCommand(moscowWarehouse.Value), cancellationToken));
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteDepartmentCommand(deletedDepartmentId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new GetLocationsQuery(new GetLocationsRequest("moscow", null, null, null)), cancellationToken));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(1, result.Value.TotalCount);
+
+        var location = Assert.Single(result.Value.Items);
+        Assert.Equal(moscowOffice.Value, location.Id);
+        Assert.Equal(1, location.DepartmentCount);
+    }
+
+    [Fact]
+    public async Task GetTopLocations_Should_Skip_Deleted_Locations_And_Departments()
+    {
+        LocationId moscowOffice = await CreateLocation("Moscow Office");
+        LocationId moscowWarehouse = await CreateLocation("Moscow Warehouse");
+        LocationId berlinOffice = await CreateLocation("Berlin Office");
+        await CreateDepartment("Отдел продаж", "sales", moscowOffice);
+        DepartmentId deletedDepartmentId = await CreateDepartment("Бухгалтерия", "accounting", moscowWarehouse);
+        await CreateDepartment("Склад", "warehouse", berlinOffice);
+        await SoftDeleteLocation(berlinOffice);
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteDepartmentCommand(deletedDepartmentId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new GetTopLocationsQuery(), cancellationToken));
+
+        Assert.True(result.IsSuccess);
+
+        var location = Assert.Single(result.Value);
+        Assert.Equal(moscowOffice.Value, location.Id);
+        Assert.Equal(1, location.DepartmentCount);
+    }
+
     private static AddressDto CreateAddress() => new()
     {
         City = "москва",
@@ -384,6 +477,18 @@ public class LocationTests(DirectoryTestWebFactory factory) : DirectoryBaseTests
             await dbContext.SaveChangesAsync();
 
             return department.Id;
+        });
+    }
+
+    private async Task SoftDeleteLocation(LocationId locationId)
+    {
+        await ExecuteInDb(async dbContext =>
+        {
+            var location = await dbContext.Locations.FirstAsync(l => l.Id == locationId);
+
+            location.Delete();
+
+            await dbContext.SaveChangesAsync();
         });
     }
 }

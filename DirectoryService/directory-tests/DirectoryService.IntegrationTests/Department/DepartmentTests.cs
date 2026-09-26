@@ -107,10 +107,73 @@ public class DepartmentTests(DirectoryTestWebFactory factory) : DirectoryBaseTes
 
         await ExecuteInDb(async dbContext =>
         {
+            var department = await dbContext.Departments
+                .IgnoreQueryFilters()
+                .FirstAsync(d => d.Id == departmentId, cancellationToken);
+
+            Assert.True(department.IsDeleted);
+            Assert.NotNull(department.DeletedAt);
             Assert.False(await dbContext.Departments.AnyAsync(d => d.Id == departmentId, cancellationToken));
-            Assert.Equal(0, await dbContext.DepartmentLocations.CountAsync(cancellationToken));
-            Assert.True(await dbContext.Locations.AnyAsync(l => l.Id == locationId, cancellationToken));
+            Assert.Equal(1, await dbContext.DepartmentLocations.CountAsync(cancellationToken));
         });
+    }
+
+    [Fact]
+    public async Task DeleteDepartment_Should_Hide_Department_From_GetById()
+    {
+        LocationId locationId = await CreateLocation();
+        DepartmentId departmentId = await CreateDepartment("Отдел продаж", "sales", locationId);
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteDepartmentCommand(departmentId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new GetDepartmentByIdQuery(departmentId.Value), cancellationToken));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task DeleteDepartment_Should_Hide_Department_From_GetDepartments()
+    {
+        LocationId locationId = await CreateLocation();
+        DepartmentId deletedId = await CreateDepartment("Analytics", "analytics", locationId);
+        DepartmentId activeId = await CreateDepartment("Backend", "backend", locationId);
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteDepartmentCommand(deletedId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new GetDepartmentsQuery(new GetDepartmentsRequest(null, null, null)), cancellationToken));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(1, result.Value.TotalCount);
+
+        var department = Assert.Single(result.Value.Items);
+        Assert.Equal(activeId.Value, department.Id);
+    }
+
+    [Fact]
+    public async Task DeleteDepartment_Twice_Should_Return_NotFound()
+    {
+        LocationId locationId = await CreateLocation();
+        DepartmentId departmentId = await CreateDepartment("Отдел продаж", "sales", locationId);
+
+        var cancellationToken = CancellationToken.None;
+
+        await ExecuteHandler((sut) =>
+            sut.Send(new DeleteDepartmentCommand(departmentId.Value), cancellationToken));
+
+        var result = await ExecuteHandler((sut) =>
+            sut.Send(new DeleteDepartmentCommand(departmentId.Value), cancellationToken));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NOT_FOUND, result.Error.Type);
     }
 
     [Fact]
